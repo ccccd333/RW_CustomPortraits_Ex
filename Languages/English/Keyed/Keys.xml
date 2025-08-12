@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <Foxy.CustomPortraits.SelectPortrait>
+    Select Portrait
+  </Foxy.CustomPortraits.SelectPortrait>
+
+  <Foxy.CustomPortraits.PortraitFor>
+    Portrait for: {0_nameFull}
+  </Foxy.CustomPortraits.PortraitFor>
+
+  <Foxy.CustomPortraits.Position>
+    Portrait position
+  </Foxy.CustomPortraits.Position>
+
+  <Foxy.CustomPortraits.Position.Default>
+    Default
+  </Foxy.CustomPortraits.Position.Default>
+
+  <Foxy.CustomPortraits.Position.Inspector>
+    Next to Inspector
+  </Foxy.CustomPortraits.Position.Inspector>
+  <Foxy.CustomPortraits.Position.Inspector.Tooltip>
+    Right above inspector tabs
+  </Foxy.CustomPortraits.Position.Inspector.Tooltip>
+
+  <Foxy.CustomPortraits.Position.ColonistBar>
+    Colonist Bar
+  </Foxy.CustomPortraits.Position.ColonistBar>
+  <Foxy.CustomPortraits.Position.ColonistBar.Tooltip>
+    Display portraits instead of colonist render in the bar on top of the screen
+  </Foxy.CustomPortraits.Position.ColonistBar.Tooltip>
+
+  <Foxy.CustomPortraits.Position.TopRight>
+    Top Right
+  </Foxy.CustomPortraits.Position.TopRight>
+  <Foxy.CustomPortraits.Position.TopRight.Tooltip>
+    Top-right corner of the screen
+  </Foxy.CustomPortraits.Position.TopRight.Tooltip>
+
+  <Foxy.CustomPortraits.Position.Actions>
+    Actions
+  </Foxy.CustomPortraits.Position.Actions>
+  <Foxy.CustomPortraits.Position.Actions.Tooltip>
+    In a row with pawn actions
+  </Foxy.CustomPortraits.Position.Actions.Tooltip>
+
+  <Foxy.CustomPortraits.Position.Custom>
+    Custom
+  </Foxy.CustomPortraits.Position.Custom>
+  <Foxy.CustomPortraits.Position.Custom.Tooltip>
+    Custom coordinates entered below
+  </Foxy.CustomPortraits.Position.Custom.Tooltip>
+
+  <Foxy.CustomPortraits.CustomX>Custom X:</Foxy.CustomPortraits.CustomX>
+  <Foxy.CustomPortraits.CustomY>Custom Y:</Foxy.CustomPortraits.CustomY>
+
+  <Foxy.CustomPortraits.OffsetX>Left offset:</Foxy.CustomPortraits.OffsetX>
+  <Foxy.CustomPortraits.OffsetY>Bottom offset:</Foxy.CustomPortraits.OffsetY>
+
+  <Foxy.CustomPortraits.ShowWhenInspector>
+    Show when tab is open
+  </Foxy.CustomPortraits.ShowWhenInspector>
+  <Foxy.CustomPortraits.ShowWhenInspector.Tooltip>
+    Show portrait when any inspector tab is open
+  </Foxy.CustomPortraits.ShowWhenInspector.Tooltip>
+
+  <Foxy.CustomPortraits.ActionsBig.Label>
+    Hover size
+  </Foxy.CustomPortraits.ActionsBig.Label>
+  <Foxy.CustomPortraits.ActionsBig.Tooltip>
+    Change size when mouse is over the portrait
+  </Foxy.CustomPortraits.ActionsBig.Tooltip>
+
+  <Foxy.CustomPortraits.Small.Label>
+    Default size
+  </Foxy.CustomPortraits.Small.Label>
+  <Foxy.CustomPortraits.Small.Width>Width:</Foxy.CustomPortraits.Small.Width>
+  <Foxy.CustomPortraits.Small.Height>Height:</Foxy.CustomPortraits.Small.Height>
+
+  <Foxy.CustomPortraits.Big.Label>
+    Size on hover
+  </Foxy.CustomPortraits.Big.Label>
+  <Foxy.CustomPortraits.Big.Width>Width:</Foxy.CustomPortraits.Big.Width>
+  <Foxy.CustomPortraits.Big.Height>Height:</Foxy.CustomPortraits.Big.Height>
+
+  <Foxy.CustomPortraits.OpenFolder>
+    Open folder
+  </Foxy.CustomPortraits.OpenFolder>
+  <Foxy.CustomPortraits.OpenFolder.Tooltip>
+    Open path:\n{0}
+  </Foxy.CustomPortraits.OpenFolder.Tooltip>
+
+  <Foxy.CustomPortraits.UpdateCache>
+    Reload portraits
+  </Foxy.CustomPortraits.UpdateCache>
+  <Foxy.CustomPortraits.UpdateCache.Tooltip>
+    Immediately update texture cache.\nThis will re-read the portraits directory.
+  </Foxy.CustomPortraits.UpdateCache.Tooltip>
+
+  <Foxy.CustomPortraits.DisabledTooltip>
+    This option is disabled in mod settings
+  </Foxy.CustomPortraits.DisabledTooltip>
+  <Foxy.CustomPortraits.NalsTooltip>
+    This option is disabled when "[Nals] CustomPortraits" mod is active.
+  </Foxy.CustomPortraits.NalsTooltip>
+  <Foxy.CustomPortraits.AnimalTooltip>
+    This options is disabled for animals
+  </Foxy.CustomPortraits.AnimalTooltip>
+
+  <Foxy.CustomPortraits.Dev.Label>Files debug:</Foxy.CustomPortraits.Dev.Label>
+  <Foxy.CustomPortraits.Dev.Tooltip>Print found image filenames to the console.</Foxy.CustomPortraits.Dev.Tooltip>
+</LanguageData>

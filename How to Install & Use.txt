@@ -1,0 +1,276 @@
+use chatgpt...
+
+...\Steam\steamapps\common\RimWorld
+    CustomPortraits
+        XXX.png
+    CustomPortraitsEx\
+        XXX\~\1.dds
+        template\
+            folder_list.txt
+            CreateFolder.py
+        Preset\
+            XXX.json
+            InteractionFilter.json
+        Setting.json
+        FileAggregator.py
+② Requirements
+CustomPortraits\XXX.png
+
+XXX can be any name you like (pawn name, etc.).
+
+CustomPortraitsEx\XXX~\1.dds
+
+XXX must match the name from step (1).
+
+For the ~ (tilde) section, avoid making it too deep — Windows has path length limits, so keep it a simple category or folder.
+
+1.dds
+
+Images can be PNG or DDS (DTX1).
+
+Max size: width 320px, height 512px.
+
+Increment filenames starting from 1.dds → 2.dds, 3.dds…
+
+Files beyond 1.dds are likely for animations.
+
+PNG is also supported for 1.png, but animation PNGs are not supported (too big for RAM/VRAM).
+
+As noted in Known Bugs and Notes.txt, DDS images should be vertically flipped.
+
+For creating animation DDS images, use the bundled Cine2DDSTool from GitHub. See Cine2DDSTool\readme.txt for instructions.
+
+template
+
+Used only for creating template.json and folders.
+
+List folder names in folder_list.txt and run the Python script to create them automatically.
+
+Intended for creating directories for step (2).
+
+Preset
+
+XXX must match the name from step (1).
+
+JSON structure is explained later.
+
+Setting.json
+
+display_duration → Used when no display time is defined in the XXX.json.
+
+recipient_log_retention.max_entries / initiator_log_retention.max_entries → Log capacity for interactions (recipient/sender).
+
+recipient_log_retention.seconds / initiator_log_retention.seconds → Cache retention time in seconds from the first interaction.
+
+Time resets if the same InteractionDef label + pawn full name occurs again.
+
+Labels are localized (e.g., "Chitchat" in English, "世間話" in Japanese).
+
+FileAggregator.py
+
+For debugging use.
+
+③ Specifications
+Does not support animals or mechanoids (no mood data / null).
+
+Animation: changes images every ~4 frames during the JSON-defined display time.
+
+If other mods add new moods, list them in section ⑤ to display custom images.
+
+Get the mood table via:
+(Main Menu) → Options → Enable Development Mode → Top menu Play icon → Output tab → Filter: Thoughts → Select Thoughts → Copy CSV
+
+If other mods add new InteractionDef, list them in the JSON to display custom images.
+
+Interaction list: Output tab → Def Label → interactionDef (output to PlayerLog.txt).
+
+Supports all languages if JSON files are UTF-8 encoded.
+
+CSV moods are comma-separated; replace commas with tabs for readability (e.g., in Sakura Editor: Ctrl+R, replace , with \t using regex).
+
+Regex basics:
+
+. → matches any single character
+
+* → matches 0 or more repetitions of the preceding element
+
+Example: .*宿舎 matches both "ひどい宿舎" and "豪華な宿舎".
+
+Supplement:
+
+moodAndInteractionImpact = container for moods and interaction names.
+
+group = groups moods and interactions via regex or exact match.
+
+priority_weights = probability-based display priority (evaluated top-to-bottom).
+
+merged_keys = merges (1) and (2).
+
+matched_priority_weights = filters (4) by keys in (3).
+
+Texture container = selects one random key from (5) and matches it in the texture container, then passes Texture2D to the next step.
+
+④ In-game Usage
+This mod changes the bottom-left inspector image based on pawn mood and interaction results.
+
+Works like Really Custom Portraits:
+
+Select a pawn → Health tab → Magnifying glass icon → Choose a PNG.
+
+The mod links the PNG name to the corresponding Preset\XXX.json.
+
+Ensure the XXX part matches exactly.
+
+⑤ Out-of-game Usage
+Overwrite the two DLLs in Really Custom Portraits Assemblies with the release DLLs from GitHub.
+
+Create Preset\XXX.json (example given for v1.0).
+
+{
+  "preset_name": "ABCD", ← This is the “XXX” part mentioned earlier.
+  "conditions": {
+    "fallback_mood": "Idle", ← Image to display when no key is selected by `priority_weights`.  
+                                If there is no linked ref key, the image from Really Custom Portraits will be shown.
+    "fallback_mood_on_death": "Dead", ← Ref key to use when the pawn is dead.
+    "refs": { ← Define texture settings here.  
+                If the key name here matches the key selected by `priority_weights` probability, that image will be shown.
+      "雨が降ってずぶぬれ": { ← Ref key. You can use regular expressions here.  
+                                You can match it either to an exact key in `priority_weights` or by regex against the key picked by `priority_weights`.  
+                                Example:  
+                                refs = Key: 雨.*ずぶぬれ | Value: ~  
+                                priority_weights = Key: 雨が降ってずぶぬれ | Value: ~  
+                                → This will display the corresponding image.  
+                                The matching is done from the ref key’s side against the picked key in `priority_weights`.
+        "textures": { ← Always `textures` here.
+          "animation_mode": 1, ← Whether this ref is animated: 1 = animation, 0 = static single image.
+          "display_duration": 6.0, ← Display time (in seconds) for the image or animation.
+          "files": [
+            "ABCD/雨が降ってずぶぬれ/1.dds~79.dds" ← For animations, define the range with `~` (tilde).  
+                                                      Try to match the “XXX” folder as much as possible.  
+                                                      You can reference other folders, but multiple JSON presets can be created.
+          ]
+        }
+      },
+      "不快感": {
+        "textures": {
+          "animation_mode": 1,
+          "display_duration": 6.0,
+          "files": [
+            "ABCD/不快感/1.dds~79.dds"
+          ]
+        }
+      },
+      "Idle": {
+        "textures": {
+          "animation_mode": 1,
+          "display_duration": 6.0,
+          "files": [
+            "ABCD/Idle/1.dds~79.dds"
+          ]
+        }
+      },
+      "Dead": {
+        "textures": {
+          "animation_mode": 1,
+          "display_duration": 6.0,
+          "files": [
+            "ABCD/Dead/1.dds~79.dds"
+          ]
+        }
+      }
+    },
+    "group": { ← Groups for moods/interactions.  
+                 This allows one-to-many management since there are too many mood/interaction names.
+      "不快感": [ ← Name for this group. Regex is allowed here too.
+        "奴隷売買", ← List mood names or interaction names here. Regex is allowed.
+        ".*摘出した",
+        "監禁された",
+        ".*人肉を捌いた",
+        "死体.*見た",
+        "死んでゆく仲間を見た",
+        ".*死ぬところを見た",
+        ".*を見放した",
+        ".*を見殺しにした",
+        "絆で結ばれた.*を見捨てた",
+        ".*の蘇生に失敗した"
+      ],
+      "雨が降ってずぶぬれ": [
+        "ずぶ濡れ"
+      ]
+    },
+    "priority_weights": { ← Defines priority and selection probability.  
+                            Items are evaluated from top to bottom, and selection is based on `weight`.
+      "不快感": { ← Usually matches a key from the `group`. Regex is allowed.  
+                    In regex mode, it checks a combination of mood + interaction + group key.  
+                    You can also list keys that aren’t grouped.  
+                    Example:  
+                    priority_weights = Key: .*を見た | Value = ~  
+                    → If the pawn has mood “死んでゆく仲間を見た” or “死体を見た”, they will be picked.  
+                    If a group “死を見た” exists, it will also be picked, and selection will be based on the weight.  
+                    The selected ref key will then be passed to the texture definition above.  
+                    In the ref key, use something like:  
+                    ".*を見た": { "files": ["ABCD/...を見た/1.dds~79.dds"] }  
+                    Note: Windows filenames cannot contain “.*”, so “...” is used instead.  
+                          This “...” is not used for matching—it can be anything.
+        "category": 0, ← Currently unused.
+        "weight": 20 ← Probability (0–100).  
+                       Values ≤0 won’t be chosen, and >100 will always be chosen (so >100 is pointless).
+      },
+      "雨が降ってずぶぬれ": {
+        "category": 0,
+        "weight": 20
+      }
+    }
+  }
+}
+
+3. InteractionFilter.json — customize to your environment
+
+json
+{
+  "preset_name": "InteractionFilter", ← Fixed value
+  "conditions": {
+    "interaction_filter": { ← Define behavior when interaction names match.  
+                               You can group interaction names in `group` values or match them all at once via regex in `priority_weights`.
+      "世間話": { ← Interaction name (regex allowed).  
+                   For interactions like “～の勉強” that have many variants, regex matching is recommended.
+        "is_recipient": 1, ← Set to 1 if you want to target the recipient of the interaction.  
+                              For “世間話”, this means the pawn who was talked to.
+        "matched_recipient_key": "世間話_受け手", ← The name picked up in Preset.json.  
+                                                       In Preset.json:  
+                                                       "group": { "世間話": ["世間話_受け手"] } ...①  
+                                                       or  
+                                                       "priority_weights": { "世間話_受け手": { ... } }  
+                                                       If grouped as in ①:  
+                                                       "priority_weights": { "世間話": { ... } }
+        "is_initiator": 1, ← Sender side. Set to 1 if you want to target the initiator of the interaction.  
+                              For “世間話”, this means the pawn who started the conversation.
+        "matched_initiator_key": "世間話_送り手", ← Sender-side version for recipient key.
+        "cache_duration_seconds": 12.0 ← How long the interaction is cached before deletion.  
+                                          Useful when you want the pawn to remain in this state for a set period.  
+                                          If not needed, just ensure it lasts at least as long as the image display time in Preset.json.  
+                                          If shorter, the cache may expire before the next image display check.
+      },
+      ".*勉強": {
+        "is_recipient": 1,
+        "matched_recipient_key": "勉強_受け手",
+        "is_initiator": 1,
+        "matched_initiator_key": "勉強_送り手",
+        "cache_duration_seconds": 12.0
+      }
+    }
+  }
+}
+
+4. Setting.json
+{
+  "display_duration": 2.0, ← Used if no display time is defined in the ref key.
+  "recipient_log_retention": { ← Capacity and default settings for recipient-side interaction logs.
+    "max_entries": 20, ← Max stack size.
+    "seconds": 12.0 ← Default time to keep entries.
+  },
+  "initiator_log_retention": {
+    "max_entries": 20,
+    "seconds": 12.0
+  }
+}

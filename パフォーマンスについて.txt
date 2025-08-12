@@ -1,0 +1,89 @@
+①moodAndInteractionImpact=rimworldの心情名とポーン同士がインタラクト(社交)の種類が1ポーンにつき、
+	大体最大20とする(×3みたいなのは1としてカウントする)、インタラクトで偏ったら1ポーンで10くらい
+②group_filter=心情値を正規表現で一致したものをValueにあるものでまとめる
+③merged_keys=①のkeyと②のvalueの正規表現で一致したものが入る
+④priority_weights=これはKeyの上から順番に優先順位があるやつ、他との相関は⑤で説明
+⑤matched_priority_weights=③のKeyと④のKeyの正規表現と一致したものを入れていく
+⑥TexTureコンテナ=⑤のランダムな1つのキーとTexTureコンテナのキーの正規表現と一致するものを後続に渡す。
+
+
+<結論>
+上記から正規表現をjsonに定義する際は
+group_filterでできるだけmoodを網羅して、priority_weights、refsで正規表現を使わずgroupの直値の内容で書くとすればパフォーマンス的によくなる。
+    "group": {
+      "vanilla": [
+        "新天地",
+        "希望が.*意気込み"
+      ],
+      "..." : [...]
+    },
+    "priority_weights": {"vanilla": {...}}
+
+---------------サンプル------------------
+group_filter ==> Key 新天地 Value vanilla
+group_filter ==> Key 希望が.*への意気込み Value vanilla
+mood ==> Key とても豪華な食堂 Value 5
+mood ==> Key よく眠れない Value -1
+mood ==> Key わずかに豪華な宿舎 Value -2
+mood ==> Key ずぶ濡れ Value -3
+mood ==> Key 希望が低い将来への意気込み Value 18
+mood ==> Key お腹が空いた Value -6
+mood ==> Key 広々室内 Value 5
+mood ==> Key 陽気な性格 Value 12
+mood ==> Key 多様な考え Value 6
+mood ==> Key 星的な環境 Value 0
+mood ==> Key 心地よい Value 4
+interaction ==> Key 世間話 Value 1
+
+Output ==> moodAndInteractionImpact ==>
+==> Key 希望が.*への意気込み Value vanilla
+==> Key とても豪華な食堂 Value 5
+==> Key よく眠れない Value -1
+==> Key わずかに豪華な宿舎 Value -2
+==> Key ずぶ濡れ Value -3
+==> Key 希望が低い将来への意気込み Value 18
+==> Key お腹が空いた Value -6
+==> Key 広々室内 Value 5
+==> Key 陽気な性格 Value 12
+==> Key 多様な考え Value 6
+==> Key 星的な環境 Value 0
+==> Key 心地よい Value 4
+
+Merged_key ==>
+==> Key vanilla Value 希望が.*への意気込み --> ここでgroupのキーと値を反転
+==> Key とても豪華な食堂 Value 5 --> moodAndInteractionImpactのものを残す理由は、
+									人によっては必要なのが1つだから、priority_weightで正規表現で判定したりする人がいるかと思い残しております。
+==> Key よく眠れない Value -1
+==> Key わずかに豪華な宿舎 Value -2
+==> Key ずぶ濡れ Value -3
+==> Key 希望が低い将来への意気込み Value 18
+==> Key お腹が空いた Value -6
+==> Key 広々室内 Value 5
+==> Key 陽気な性格 Value 12
+==> Key 多様な考え Value 6
+==> Key 星的な環境 Value 0
+==> Key 心地よい Value 4
+
+----------------
+Input ==> moodAndInteractionImpact
+
+priority_weights
+==>key 新天地  value 20
+==>key 希望が.*意気込み  value 10
+==>key vanilla value 20 
+
+Output ==> matched_priority_weights
+==>Key 希望が低い将来への意気込み Value 10
+==>Key vanilla Value 20
+----------------
+
+※matched_priority_weightsのValueの内容で、ランダムに一つピックアップする。
+
+Input ==> vanilla
+
+TexTureコンテナ 
+==> Key 新天地 Value Texture2D
+==> Key 希望が.*への意気込み Value Texture2D
+==> Key vanilla Value Texture2D
+
+Output ==> vanillaのRefsの内容で、画像アニメーションor画像表示をする。

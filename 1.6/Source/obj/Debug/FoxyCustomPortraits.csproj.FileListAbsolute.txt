@@ -1,0 +1,7 @@
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Assemblies\Foxy.CustomPortraits.dll
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Assemblies\Foxy.CustomPortraits.pdb
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Debug\FoxyCustomPortraits.csproj.AssemblyReference.cache
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Debug\FoxyCustomPortraits.csproj.CoreCompileInputs.cache
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Debug\FoxyCust.45883B0D.Up2Date
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Debug\Foxy.CustomPortraits.dll
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Debug\Foxy.CustomPortraits.pdb

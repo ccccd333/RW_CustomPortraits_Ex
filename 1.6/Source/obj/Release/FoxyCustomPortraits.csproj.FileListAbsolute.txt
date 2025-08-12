@@ -1,0 +1,10 @@
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\bin\Release\Foxy.CustomPortraits.dll
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\bin\Release\Foxy.CustomPortraits.pdb
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\bin\Release\0Harmony.dll
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\bin\Release\Unity.Newtonsoft.Json.dll
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\bin\Release\Unity.Newtonsoft.Json.xml
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Release\FoxyCustomPortraits.csproj.AssemblyReference.cache
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Release\FoxyCustomPortraits.csproj.CoreCompileInputs.cache
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Release\FoxyCust.45883B0D.Up2Date
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Release\Foxy.CustomPortraits.dll
+C:\Users\daichi\source\repos\RW_CustomPortraits\1.6\Source\obj\Release\Foxy.CustomPortraits.pdb

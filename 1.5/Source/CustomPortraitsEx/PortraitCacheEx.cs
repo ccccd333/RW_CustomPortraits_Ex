@@ -407,6 +407,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                 Buffer.BlockCopy(data, 128, pixel_data, 0, pixel_data_length);
                                 
                                 Texture2D tex = new Texture2D(320, 512, TextureFormat.DXT1, false);
+                                Utility.FlipDXT1(pixel_data, 320, 512);
+
+
                                 tex.LoadRawTextureData(pixel_data);
                                 
                                 tex.Apply();

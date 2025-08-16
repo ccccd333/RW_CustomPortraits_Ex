@@ -1,6 +1,7 @@
 ﻿using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -489,7 +490,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             // Maybe this is important, I dunno.
             int mipMapCount = dds.dwFlags.HasFlag(DDSD.MipmapCount) && dds.dwMipMapCount > 1 ? (int)dds.dwMipMapCount : 1;
 
-            Texture2D tex = new Texture2D((int)dds.dwWidth, (int)dds.dwHeight, fmt, mipMapCount, false);
+            Texture2D tex = new Texture2D((int)dds.dwWidth, (int)dds.dwHeight, fmt, false);
 
             if (dds.ddpfPixelFormat.IsDXT1)
                 Utility.FlipDXT1(dxt, (int)dds.dwWidth, (int)dds.dwHeight);
@@ -500,5 +501,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
             return tex;
         }
+
+        
     }
 }

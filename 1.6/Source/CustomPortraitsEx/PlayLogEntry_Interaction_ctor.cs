@@ -46,7 +46,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 //Log.Message($"Thread ID: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
                 if (!PortraitCacheEx.IsAvailable) return true;
 
-                //Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
+                Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
                 CleanupExpiredAndExcessLogs();
 
                 var ismap = PortraitCacheEx.InteractionSelectionMap;

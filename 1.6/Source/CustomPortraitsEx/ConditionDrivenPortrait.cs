@@ -204,7 +204,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                             {
                                 int weight = kvp.Value.weight;
                                 int seed = UnityEngine.Random.Range(0, 100);
-                                Log.Message($"[PortraitsEx] name: {kvp.Value.filter_name} seed: {seed} weight: {weight}");
+                                //Log.Message($"[PortraitsEx] name: {kvp.Value.filter_name} seed: {seed} weight: {weight}");
                                 if (seed < weight)
                                 {
                                     mood_name = kvp.Value.filter_name;
@@ -398,7 +398,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 {
                     // 豪華な宿舎みたいにstage[0]がnullのものがあったりする。
                     // なのでこれはそれ用
-                    Log.Warning($"[PortraitsEx] WARN: need, LabelCap is null");
+                    //Log.Warning($"[PortraitsEx] WARN: need, LabelCap is null");
                     continue;
                 }
 

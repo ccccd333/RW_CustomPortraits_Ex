@@ -3,11 +3,10 @@ UnityではLoadRawによる読み込みはRAM→Apply→VRAMの順に載せら�
 
 ◆RAM
 起動直後：1.37 GB
-フルDLC：1.83 GB（+約460 MB）
+DLC(オデッセイ以外)：1.83 GB（+約460 MB）
 DDS 8488枚読み込み：2.92 GB（+約1.1 GB）
 
 ◆VRAM
 起動直後：11.5 GB
-フルDLC：12.34 GB（+約0.8 GB）
+DLC(オデッセイ以外)：12.34 GB（+約0.8 GB）
 DDS 8488枚読み込み：13.16 GB（+約0.8 GB）
-t

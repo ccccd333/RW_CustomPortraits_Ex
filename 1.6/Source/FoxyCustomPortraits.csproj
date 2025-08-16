@@ -76,6 +76,7 @@
     <Compile Include="CustomPortraitsEx\Repository\Sounds.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Textures.cs" />
     <Compile Include="CustomPortraitsEx\Utility.cs" />
+    <Compile Include="DDS.cs" />
     <Compile Include="Dialog_PortraitPawn.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="GameComponent_CustomPortraits.cs" />

@@ -37,6 +37,7 @@ Files beyond 1.dds are likely for animations.
 PNG is also supported for 1.png, but animation PNGs are not supported (too big for RAM/VRAM).
 
 As noted in Known Bugs and Notes.txt, DDS images should be vertically flipped.
+Note: In ver1.1 test, vertical flipping was performed in-game. No additional flipping is necessary
 
 For creating animation DDS images, use the bundled Cine2DDSTool from GitHub. See Cine2DDSTool\readme.txt for instructions.
 

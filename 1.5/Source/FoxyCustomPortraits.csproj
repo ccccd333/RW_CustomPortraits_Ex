@@ -66,12 +66,12 @@
   <ItemGroup>
     <Compile Include="Comp_PawnCustomPortrait.cs" />
     <Compile Include="CustomPortraitsEx\ConditionDrivenPortrait.cs" />
-    <Compile Include="CustomPortraitsEx\PlayLogEntry_Interaction_ctor.cs" />
     <Compile Include="CustomPortraitsEx\PExSetting.cs" />
+    <Compile Include="CustomPortraitsEx\PlayLogEntry_Interaction_ctor.cs" />
     <Compile Include="CustomPortraitsEx\PortraitCacheEx.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Group.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\InteractionSelectionMap.cs" />
     <Compile Include="CustomPortraitsEx\Repository\InteractionFilter.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\InteractionSelectionMap.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PawnCacheEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PriorityWeights.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Refs.cs" />

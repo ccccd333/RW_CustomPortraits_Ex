@@ -20,7 +20,7 @@ fps = data["fps"]
 vf = "fps=" + str(fps) + ",scale=iw:ih:flags=lanczos,palettegen"
 
 subprocess.run([
-    ffmpeg, "-ss", "0", "-t", "5", "-i", input_video,
+    ffmpeg, "-i", input_video,
     "-vf", vf,
     "-y", palette
 ], check=True)
@@ -29,7 +29,7 @@ subprocess.run([
 filter_complex = "fps=" + str(fps) + ",scale=iw:ih:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5"
 
 subprocess.run([
-    ffmpeg, "-ss", "0", "-t", "5", "-i", input_video, "-i", palette,
+    ffmpeg, "-i", input_video, "-i", palette,
     "-filter_complex", filter_complex,
     "-y", output_gif
 ], check=True)
@@ -37,6 +37,7 @@ subprocess.run([
 # 3. ImageMagickで最適化
 subprocess.run([
     magick, output_gif,
+    "-define", "dds:compression=dxt1",
     "-coalesce", "-layers", "Optimize", "-colors", "256",
     optimized_gif
 ], check=True)

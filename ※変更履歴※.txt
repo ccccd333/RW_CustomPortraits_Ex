@@ -1,0 +1,32 @@
+ver 1.1 test
+	１．Cine2DDSToolでvflip（上下逆転）処理を削除しました。
+	その代わり、ゲーム内でDDSブロックを反転し上下逆転処理を追加しました。
+	そのためすでにver1.0で上下逆転してしまった人は、convert_dds_dtx1_2_dds_vflip.pyを使って
+	dds画像を再度上下逆転してください。
+	
+	２．Really Custom Portraitsの最新版を取り込みました。
+	https://steamcommunity.com/sharedfiles/filedetails/?id=2956572955&tscn=1755200430
+	
+	本体を更新してからこのmodで上書きしてください。
+	
+	３．画像サイズは320×512でしたが、サイズ関係なしにしました。
+	
+	４．キャラクターが今なんのInteractionDefを行っているかわかりにくいので、PlayerLog.txtにメッセージとして
+	出力しました。大量に流れすぎる場合や、不満が多い場合は別の対処法にしようと思います。
+	ただ、400人の敵を呼び出してもそんなにログとして蓄積はしないと思ってはおります。
+	
+	------------------
+
+	1. Removed vflip (vertical flip) processing from Cine2DDSTool.
+	Instead, vertical flipping is now handled in-game by flipping the DDS blocks.
+	Therefore, if you already applied vertical flipping in ver1.0, please use convert_dds_dtx1_2_dds_vflip.py to flip the DDS images again.
+	2. Integrated the latest version of Really Custom Portraits.
+	https://steamcommunity.com/sharedfiles/filedetails/?id=2956572955&tscn=1755200430
+	Please update the main files first, then overwrite them with this mod.
+	3. Image size was previously fixed at 320×512, but it is now size-independent.
+	4. Since it's hard to tell which InteractionDef a character is currently performing, a message is now output to PlayerLog.txt.
+	If the log becomes too noisy or users find it annoying, I’ll consider alternative solutions.
+	That said, even if you summon 400 enemies, I don’t expect the log to grow excessively.
+
+ver1.0 test
+	初版

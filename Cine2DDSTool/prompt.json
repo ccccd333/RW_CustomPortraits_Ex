@@ -3,26 +3,28 @@
   "gif_path": "C:/Cine2DDSTool/gif2png/output.gif",
   "pngs_path": "C:/Cine2DDSTool/gif2png/output_pngs",
   "dds_path": "C:/Cine2DDSTool/png2dds",
+  "vflip_input_path": "C:/Cine2DDSTool/vflip_input",
+  "vflip_output_path": "C:/Cine2DDSTool/vflip_output",
 
-  "以下はカットイン名":"",
-  "cutin_name" : "cutinidlepm",
+  "以下はカットイン名": "",
+  "cutin_name": "",
 
-  "以下はtexconv用パス":"",
+  "以下はtexconv用パス": "",
   "texconv_path": "C:/Cine2DDSTool/texconv/texconv.exe",
-  
-  "以下はクオリティ用videoパス":"",
-  "ffmpeg" : "C:/Cine2DDSTool/ffmpeg-7.1.1-essentials_build/bin/ffmpeg.exe",
-  "magick" : "C:/Program Files/ImageMagick-7.1.1-Q16/magick.exe",
 
-  "以下はgif2pngの画像サイズ":"",
-  "resize_width" : 320,
-  "resize_height" : 512,
+  "以下はクオリティ用videoパス": "",
+  "ffmpeg": "C:/Cine2DDSTool/ffmpeg-7.1.1-essentials_build/bin/ffmpeg.exe",
+  "magick": "C:\\Program Files\\ImageMagick-7.1.2-Q16-HDRI/magick.exe",
 
-  "以下はクオリティ用Video2gifの設定":"",
-  "fps" : 16,
+  "以下はgif2pngの画像サイズ": "",
+  "resize_width": 320,
+  "resize_height": 512,
+
+  "以下はクオリティ用Video2gifの設定": "",
+  "fps": 16,
 
 
-  "以下はVideo2gifの設定":"",
-  "n_start_time" : 0,
-  "target_frames" : 12
+  "以下はVideo2gifの設定": "",
+  "n_start_time": 0,
+  "target_frames": 12
 }

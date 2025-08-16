@@ -80,14 +80,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     JToken value = mood_prop.Value;
                     try
                     {
-                        if(key == "fallback_mood")
+                        if (key == "fallback_mood")
                         {
                             if (value is JValue fallback_mood)
                             {
                                 r.fallback_mood = fallback_mood.Value.ToString();
-                                
+
                             }
-                            
+
                         }
                         else if (key == "fallback_mood_on_death")
                         {
@@ -101,7 +101,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         {
                             Refts(preset_name, key, value, r);
                         }
-                        else if(key == "interaction_filter")
+                        else if (key == "interaction_filter")
                         {
                             InteractionFilter(preset_name, key, value, r);
                         }
@@ -117,7 +117,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         {
                             throw new Exception("The preset JSON definition is incorrect." + preset_name);
                         }
-                    }catch(Exception e)
+                    }
+                    catch (Exception e)
                     {
                         throw new Exception("The preset JSON definition is incorrect." + preset_name + " [wt?]: " + e.Message);
                     }
@@ -163,7 +164,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                             r.txs_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
                         }
                     }
-                    
+
                 }
 
             }
@@ -194,7 +195,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     {
                         if (prop_n.Value is JValue is_recipient)
                         {
-                            intf.is_recipient = is_recipient.Value<int>() == 1?true: false;
+                            intf.is_recipient = is_recipient.Value<int>() == 1 ? true : false;
                         }
                     }
                     else if (cont == "matched_recipient_key")
@@ -259,7 +260,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     if (!r.group_filter.ContainsKey(Refs_key))
                     {
                         r.group_filter.Add(Refs_key, g_k);
-                        if (Utility.IsRegexPattern(Refs_key)) 
+                        if (Utility.IsRegexPattern(Refs_key))
                         {
                             r.g_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
                         }
@@ -326,7 +327,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
             }
 
-            
+
         }
 
         private static Textures Textures(string preset_name, string k, JToken n, Refs r)
@@ -402,17 +403,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
                                 //Log.Message($"[PortraitsEx] Load Protraits: {f}");
                                 byte[] data = File.ReadAllBytes(f);
-                                int pixel_data_length = data.Length - 128;
-                                byte[] pixel_data = new byte[pixel_data_length];
-                                Buffer.BlockCopy(data, 128, pixel_data, 0, pixel_data_length);
-                                
-                                Texture2D tex = new Texture2D(320, 512, TextureFormat.DXT1, false);
-                                Utility.FlipDXT1(pixel_data, 320, 512);
-
-
-                                tex.LoadRawTextureData(pixel_data);
-                                
-                                tex.Apply();
+                                Texture2D tex = LoadTextureDDS(data);
                                 tx.txs.Add(tex);
                             }
                         }
@@ -421,18 +412,11 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                             string d = "";
                             Utility.Delimiter(portrait_path, out d);
 
-                            if (d==".dds")
+                            if (d.ToLower() == ".dds")
                             {
                                 string f = Directory.FullName + "/" + v;
                                 byte[] data = File.ReadAllBytes(f);
-                                int pixel_data_length = data.Length - 128;
-                                byte[] pixel_data = new byte[pixel_data_length];
-                                Buffer.BlockCopy(data, 128, pixel_data, 0, pixel_data_length);
-
-                                Texture2D tex = new Texture2D(320, 512, TextureFormat.DXT1, false);
-                                tex.LoadRawTextureData(pixel_data);
-
-                                tex.Apply();
+                                Texture2D tex = LoadTextureDDS(data);
                                 tx.txs.Add(tex);
                             }
                             else
@@ -453,6 +437,68 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
 
             return tx;
+        }
+
+        private static Texture2D LoadTextureDDS(byte[] data)
+        {
+            DDS dds = DDS.Parse(data);
+
+            TextureFormat fmt;
+            if (dds.ddpfPixelFormat.IsDXT1)
+            {
+                fmt = TextureFormat.DXT1;
+            }
+            else if (dds.ddpfPixelFormat.IsDXT5)
+            {
+                fmt = TextureFormat.DXT5;
+                if (dds.dwWidth % 4 != 0 || dds.dwHeight % 4 != 0)
+                {
+                    throw new FormatException($"DXT5 format requires dimensions to be divisable by 4: {dds.dwWidth}x{dds.dwHeight}");
+                }
+            }
+            else
+            {
+                // Not sure why I'm so pedant about exact wrong format, but I woke up after already writing this
+                if (dds.ddpfPixelFormat.dwFlags.HasFlag(DDPF.FourCC))
+                {
+                    throw new FormatException($"Unsupported pixel format: {dds.ddpfPixelFormat.StringFourCC}");
+                }
+                else if (dds.ddpfPixelFormat.dwFlags.HasFlag(DDPF.RGB))
+                {
+                    // Thankfully I stopped myself before reporting in the exact A_R_G_B_ notation
+                    if (dds.ddpfPixelFormat.dwFlags.HasFlag(DDPF.AlphaPixels))
+                        throw new FormatException($"Unsupported pixel format: ARGB");
+                    else throw new FormatException($"Unsupported pixel format: RGB");
+                }
+                else
+                {
+                    throw new FormatException($"Unsupported pixel format: unknown");
+                }
+            }
+
+            // DDSD_LINEARSIZE is required for compressed formats and DXTn are all compressed
+            if (!dds.dwFlags.HasFlag(DDSD.LinearSize))
+                throw new FormatException($"Linear size flag not set for a compressed format (0x{(uint)dds.dwFlags:X8})");
+            if (dds.dwFlags.HasFlag(DDSD.Pitch))
+                throw new FormatException($"Pitch flag set for a compressed format (0x{(uint)dds.dwFlags:X8})");
+
+            // Pixel data size should be equal to dwPitchOrLinearSize since DDSD_LINEARSIZE is required for DXT, but I can't bring myself to trust it.
+            byte[] dxt = new byte[data.Length - dds.DataOffset];
+            Buffer.BlockCopy(data, (int)dds.DataOffset, dxt, 0, data.Length - (int)dds.DataOffset);
+
+            // Maybe this is important, I dunno.
+            int mipMapCount = dds.dwFlags.HasFlag(DDSD.MipmapCount) && dds.dwMipMapCount > 1 ? (int)dds.dwMipMapCount : 1;
+
+            Texture2D tex = new Texture2D((int)dds.dwWidth, (int)dds.dwHeight, fmt, mipMapCount, false);
+
+            if (dds.ddpfPixelFormat.IsDXT1)
+                Utility.FlipDXT1(dxt, (int)dds.dwWidth, (int)dds.dwHeight);
+            else
+                Utility.FlipDXT5(dxt, (int)dds.dwWidth, (int)dds.dwHeight);
+            tex.LoadRawTextureData(dxt);
+            tex.Apply();
+
+            return tex;
         }
     }
 }

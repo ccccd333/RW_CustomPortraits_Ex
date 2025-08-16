@@ -8,7 +8,6 @@ using Verse;
 namespace Foxy.CustomPortraits {
 	public class Dialog_PortraitPawn : Window {
 		private readonly Pawn pawn;
-		private readonly List<Widgets.DropdownMenuElement<string>> fileOptions = new List<Widgets.DropdownMenuElement<string>>();
 		private readonly List<Widgets.DropdownMenuElement<PortraitPosition?>> positionOptions = new List<Widgets.DropdownMenuElement<PortraitPosition?>>();
 		private PortraitPosition? position;
 		private Vector2 scrollPosition = Vector2.zero;
@@ -118,9 +117,9 @@ namespace Foxy.CustomPortraits {
 				}
 			}
 			foreach (FileInfo fi in dir.EnumerateFiles()) {
-				GUI.enabled = PortraitCache.IsValidPortraitFile(fi);
 				string filename = PortraitCache.GetRelativePath(fi);
 				Texture2D portrait = PortraitCache.Get(filename);
+				GUI.enabled = portrait != null;
 				if (DrawDirItem(portrait, fi.Name, SelectedFile == filename)) {
 					pawn.SetPortraitName(position, filename);
 					UpdatePositionOptions();

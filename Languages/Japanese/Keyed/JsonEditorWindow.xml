@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<Foxy.CustomPortraits.RCPEditor>RCP JSON Editor</Foxy.CustomPortraits.RCPEditor>
+	<!--Button-->
+	<Foxy.CustomPortraits.RCP_B_InputClear>入力済みをクリア</Foxy.CustomPortraits.RCP_B_InputClear>
+	<Foxy.CustomPortraits.RCP_B_PresetCreate>プリセットの新規作成</Foxy.CustomPortraits.RCP_B_PresetCreate>
+	<Foxy.CustomPortraits.RCP_B_WriteJson>JSONに書き込み</Foxy.CustomPortraits.RCP_B_WriteJson>
+	<Foxy.CustomPortraits.RCP_B_Clear>クリア</Foxy.CustomPortraits.RCP_B_Clear>
+	<Foxy.CustomPortraits.RCP_B_Select>選択</Foxy.CustomPortraits.RCP_B_Select>
+	<Foxy.CustomPortraits.RCP_B_Back>保存しないで戻る</Foxy.CustomPortraits.RCP_B_Back>
+	<Foxy.CustomPortraits.RCP_B_Enter>決定</Foxy.CustomPortraits.RCP_B_Enter>
+	<Foxy.CustomPortraits.RCP_B_Create>新規作成</Foxy.CustomPortraits.RCP_B_Create>
+	<Foxy.CustomPortraits.RCP_B_Add>追加する</Foxy.CustomPortraits.RCP_B_Add>
+	<Foxy.CustomPortraits.RCP_B_AddAll>全て追加する</Foxy.CustomPortraits.RCP_B_AddAll>
+	<Foxy.CustomPortraits.RCP_B_Remove>はずす</Foxy.CustomPortraits.RCP_B_Remove>
+
+
+	<!-- tabs -->
+	<Foxy.CustomPortraits.RCPEditorTab1>ダッシュボード</Foxy.CustomPortraits.RCPEditorTab1>
+	<Foxy.CustomPortraits.RCPEditorTab2>心情の選択</Foxy.CustomPortraits.RCPEditorTab2>
+	<Foxy.CustomPortraits.RCPEditorTab3>インタラクトの選択</Foxy.CustomPortraits.RCPEditorTab3>
+	<Foxy.CustomPortraits.RCPEditorTab4>インタラクトの振分</Foxy.CustomPortraits.RCPEditorTab4>
+	<Foxy.CustomPortraits.RCPEditorTab5>グループ化</Foxy.CustomPortraits.RCPEditorTab5>
+	<Foxy.CustomPortraits.RCPEditorTab6>ポートレートの選択</Foxy.CustomPortraits.RCPEditorTab6>
+	<Foxy.CustomPortraits.RCPEditorTab7>優先順位の設定</Foxy.CustomPortraits.RCPEditorTab7>
+	
+	<!--DashBordTab-->
+	<Foxy.CustomPortraits.RCP_DBR_SelectPreset>プリセットの選択</Foxy.CustomPortraits.RCP_DBR_SelectPreset>
+	<Foxy.CustomPortraits.RCP_DBR_SelectAnItem>以下のリストから編集したいプリセットを選択してください</Foxy.CustomPortraits.RCP_DBR_SelectAnItem>
+	<Foxy.CustomPortraits.RCP_DBR_SelectFrom>選択されたプリセット名：</Foxy.CustomPortraits.RCP_DBR_SelectFrom>
+	<Foxy.CustomPortraits.RCP_DBR_Validate>新規作成のプリセットでない且つ「優先順位の設定」のみ単体でチェックが入っていればJsonの書き込み可能です</Foxy.CustomPortraits.RCP_DBR_Validate>
+
+	<Foxy.CustomPortraits.RCP_DBR_InputPresetName>プリセット名の入力</Foxy.CustomPortraits.RCP_DBR_InputPresetName>
+	<Foxy.CustomPortraits.RCP_DBR_InputPresetNameLable>ここはRimWorld/CustomPortraitsに配置されている画像名の拡張子を除いたものを入力してください</Foxy.CustomPortraits.RCP_DBR_InputPresetNameLable>
+	<Foxy.CustomPortraits.RCP_DBR_InputSamePresetName>既に存在するプリセット名です。違う名前にしてください</Foxy.CustomPortraits.RCP_DBR_InputSamePresetName>
+	<Foxy.CustomPortraits.RCP_DBR_EnterPresetName>プリセット名を入力してください:</Foxy.CustomPortraits.RCP_DBR_EnterPresetName>
+	<!--DashBordTabError-->
+	<Foxy.CustomPortraits.RCP_DBRE_Error1>新規JSONではない場合、インタラクション以外は入力ください</Foxy.CustomPortraits.RCP_DBRE_Error1>
+	<Foxy.CustomPortraits.RCP_DBRE_Error2>インタラクションのみの更新は可能ですが、インタラクトの選択タブを入力ください</Foxy.CustomPortraits.RCP_DBRE_Error2>
+	<Foxy.CustomPortraits.RCP_DBRE_Error3>優先順位のみの更新は可能ですが、優先順位タブを入力ください</Foxy.CustomPortraits.RCP_DBRE_Error3>
+	
+	<!--ThoughtBrowser-->
+	<Foxy.CustomPortraits.RCP_TB_ClearSelected>選択をクリア</Foxy.CustomPortraits.RCP_TB_ClearSelected>
+	<Foxy.CustomPortraits.RCP_TB_ThoughtFilter>心情名でフィルターする:</Foxy.CustomPortraits.RCP_TB_ThoughtFilter>
+	<!--ThoughtBrowserError-->
+	<Foxy.CustomPortraits.RCP_TBE_RegexFilter>正規表現が不正です:</Foxy.CustomPortraits.RCP_TBE_RegexFilter>
+
+	<!--InteractionBrowser-->
+	<Foxy.CustomPortraits.RCP_IB_ClearSelected>選択をクリア</Foxy.CustomPortraits.RCP_IB_ClearSelected>
+	<Foxy.CustomPortraits.RCP_IB_InteractionFilter>インタラクト名をフィルターする:</Foxy.CustomPortraits.RCP_IB_InteractionFilter>
+	<!--ThoughtBrowserError-->
+	<Foxy.CustomPortraits.RCP_IBE_RegexFilter>正規表現が不正です:</Foxy.CustomPortraits.RCP_IBE_RegexFilter>
+	
+	<!--InteractionFilterEditor-->
+	<Foxy.CustomPortraits.RCP_IFE_Desc1>ここはポーンが世間話や侮辱などを行ったもしくは受けた際</Foxy.CustomPortraits.RCP_IFE_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_Desc2>どういう名前で管理するかをまとめるものです</Foxy.CustomPortraits.RCP_IFE_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_Desc3>「侮辱を受けた側はこの名前」と決めることで、後続のグループ編集でここで決めた修飾子(名前)が使えるようになります</Foxy.CustomPortraits.RCP_IFE_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_Desc4>グループ編集でなぜ行わないかというと、インタラクトは受け手と送り手が存在するためです</Foxy.CustomPortraits.RCP_IFE_Desc4>
+	<Foxy.CustomPortraits.RCP_IFE_Desc5>心情と違い一人称ではなく二者関係です。Modによっては受け手も送り手も一緒の人間になる場合があります</Foxy.CustomPortraits.RCP_IFE_Desc5>
+
+	<Foxy.CustomPortraits.RCP_IFE_PleaseSelectOne>「インタラクトの選択」タブを一つ以上選択してください</Foxy.CustomPortraits.RCP_IFE_PleaseSelectOne>
+
+	<Foxy.CustomPortraits.RCP_IFE_CreateInter>インタラクト名を新規作成</Foxy.CustomPortraits.RCP_IFE_CreateInter>
+	<Foxy.CustomPortraits.RCP_IFE_EditBaseInter>既存のインタラクトを編集</Foxy.CustomPortraits.RCP_IFE_EditBaseInter>
+	<Foxy.CustomPortraits.RCP_IFE_Initiator>[送り手]</Foxy.CustomPortraits.RCP_IFE_Initiator>
+	<Foxy.CustomPortraits.RCP_IFE_Recipient>[受け手]</Foxy.CustomPortraits.RCP_IFE_Recipient>
+	<Foxy.CustomPortraits.RCP_IFE_InitiatorInter>このやりとりの送り手側の修飾子を入力してください:</Foxy.CustomPortraits.RCP_IFE_InitiatorInter>
+	<Foxy.CustomPortraits.RCP_IFE_RecipientInter>このやりとりの受け手側の修飾子を入力してください:</Foxy.CustomPortraits.RCP_IFE_RecipientInter>
+	<Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc1>これはキャッシュ時間です。２人のポーンが世間話をしたことが終了したことまでは通知されません</Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc2>またポートレートの切り替え時間を世間話が終わったタイミングで切り替えると一瞬すぎるため、ユーザー側でキャッシュする時間を設定します</Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc3>キャッシュ時間の設定：</Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc3>
+
+	<Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc1>ここはインタラクト選択一覧画面で選択したものを送り手/受け手の名前と紐づける場所です</Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc2>１つ以上選択して決定ボタンを押してください</Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc3>この受け手と送り手(どちらかのみでも可能)をまとめる要約名を入力してください:</Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_IRName>送り手/受け手の名前：</Foxy.CustomPortraits.RCP_IFE_IRName>
+	<Foxy.CustomPortraits.RCP_IFE_ClearSelected>選択をクリア</Foxy.CustomPortraits.RCP_IFE_ClearSelected>
+	<Foxy.CustomPortraits.RCP_IFE_InterFilt>インタラクト名をフィルターする:</Foxy.CustomPortraits.RCP_IFE_InterFilt>
+
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc1>ここの設定は終わりです。この画面の状態で他のタブを入力してください</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc2>もし入力内容に問題がある場合、お手数ですが「保存しないで戻る」を選択してください</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc3>送り手/受け手の名前：</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc4>インタラクト名：</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc4>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc5>キャッシュ時間：</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc5>
+
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc1>キャッシュ時間が異なるが、同じインタラクト名を指しています</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc2>手動でJsonを記述したもののため、この画面では後の値で上書きしてしまいます</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc3>一旦InteractionFilter.jsonをバックアップを取ることをお勧めします</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc4>よろしいですか？</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc4>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc5>上書きされる対象と値の一覧：上書きされるキャッシュ時間 ==> </Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc5>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc6>インタラクト名</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc6>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc7>受け手</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc7>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc8>送り手</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc8>
+	<!--InteractionFilterEditorError-->
+	<Foxy.CustomPortraits.RCP_IFE_RegexFilter>正規表現が不正です:</Foxy.CustomPortraits.RCP_IFE_RegexFilter>
+	
+	<!--GroupEditor-->
+	<Foxy.CustomPortraits.RCP_GE_Desc1>ここはポーンの心情名と前工程で名前を決めたインタラクト名をグループ化するところです</Foxy.CustomPortraits.RCP_GE_Desc1>
+	<Foxy.CustomPortraits.RCP_GE_Desc2>グループ化しないと心情名とインタラクト名の一つ一つに画像パスを書くことになり、それはとても大変です</Foxy.CustomPortraits.RCP_GE_Desc2>
+	<Foxy.CustomPortraits.RCP_GE_Desc3>そんなに大量の画像は作っていられないと思うので、ある程度同じような心情などは</Foxy.CustomPortraits.RCP_GE_Desc3>
+	<Foxy.CustomPortraits.RCP_GE_Desc4>一つのグループ名にして、そのグループ名で後工程の画像と紐づけるとためのものです</Foxy.CustomPortraits.RCP_GE_Desc4>
+	<Foxy.CustomPortraits.RCP_GE_Desc5>「心情の選択」タブで一つ以上選択するか「インタラクトの振分」タブで振り分けてからこの画面を操作してください</Foxy.CustomPortraits.RCP_GE_Desc5>
+	<Foxy.CustomPortraits.RCP_GE_Desc6>「インタラクトの選択」タブで選択されています</Foxy.CustomPortraits.RCP_GE_Desc6>
+	<Foxy.CustomPortraits.RCP_GE_Desc7>「インタラクトの振分」タブでインタラクトを送り手と受け手に振り分けてからグループ分けしてください</Foxy.CustomPortraits.RCP_GE_Desc7>
+	<Foxy.CustomPortraits.RCP_GE_Desc8>編集対象のプリセット名を一つ以上選択してください</Foxy.CustomPortraits.RCP_GE_Desc8>
+
+	<Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc1>グループの新規作成</Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc1>
+	<Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc2>既存のグループ編集</Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc2>
+
+	<Foxy.CustomPortraits.RCP_GE_EnterGroupNameDesc1>グループ名を入力してください:</Foxy.CustomPortraits.RCP_GE_EnterGroupNameDesc1>
+
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc1>どの心情名、インタラクト名をこのグループに含めるか選択してください</Foxy.CustomPortraits.RCP_GE_EditGroupDesc1>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc2>後ほどこのグループ名でどのテクスチャを表示するかを決定します</Foxy.CustomPortraits.RCP_GE_EditGroupDesc2>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc3>選択しているグループ名:</Foxy.CustomPortraits.RCP_GE_EditGroupDesc3>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc4>追加済み</Foxy.CustomPortraits.RCP_GE_EditGroupDesc4>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc5>選択した心情とインタラクト</Foxy.CustomPortraits.RCP_GE_EditGroupDesc5>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc6>一度グループから外したもの(ゴミ箱)</Foxy.CustomPortraits.RCP_GE_EditGroupDesc6>
+
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc1>ここの設定は終わりです。この画面の状態で「ポートレートの選択」タブを入力してください</Foxy.CustomPortraits.RCP_GE_EndEditingDesc1>
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc2>もし入力内容に問題がある場合、お手数ですが「保存しないで戻る」を選択してください</Foxy.CustomPortraits.RCP_GE_EndEditingDesc2>
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc3>編集したグループの名前：</Foxy.CustomPortraits.RCP_GE_EndEditingDesc3>
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc4>このグループに含まれる心情やインタラクトの振り分けした名前：</Foxy.CustomPortraits.RCP_GE_EndEditingDesc4>
+	
+	<!--PortraitGroupEditor-->
+	<Foxy.CustomPortraits.RCP_PG_Desc1>ここは「ポートレートの選択」タブです</Foxy.CustomPortraits.RCP_PG_Desc1>
+	<Foxy.CustomPortraits.RCP_PG_Desc2>心情などを前工程でグループ化されているため、そのグループ名とここに定義するポートレートを紐づけます</Foxy.CustomPortraits.RCP_PG_Desc2>
+	<Foxy.CustomPortraits.RCP_PG_Desc3>例えば世間話ならこのポートレート、侮辱されたならこのポートレートみたいな設定です</Foxy.CustomPortraits.RCP_PG_Desc3>
+	<Foxy.CustomPortraits.RCP_PG_Desc4>アニメーションの場合は複数のDDS(DXT1)画像のみとなります</Foxy.CustomPortraits.RCP_PG_Desc4>
+	<Foxy.CustomPortraits.RCP_PG_Desc5>アニメーション以外の場合はPNGもしくはDDS(DXT1)画像となります</Foxy.CustomPortraits.RCP_PG_Desc5>
+	<Foxy.CustomPortraits.RCP_PG_Desc6>「グループ化」タブが完了後にこのタブで編集してください</Foxy.CustomPortraits.RCP_PG_Desc6>
+
+	<Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc1>ポートレートとグループ名の紐づけ</Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc2>既に紐づいているグループが存在するため初期値はこちらを使用します：</Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc2>
+
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc1>アイドル状態のポートレートの設定</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc2>重み設定で一つも状態が選ばれなかった場合に設定するアイドル用の画像です</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc2>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc3>心情の画像で表示確率が例えば99%でも処理が抜けてきます</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc3>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc4>そのため何も選ばれなかった場合の画像の設定です</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc4>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc5>既にIdleが存在するため初期値はこちらを使用します：</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc5>
+
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc1>死亡状態のポートレートの設定</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc2>ポーンは死亡した段階で心情がなくなります</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc2>
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc3>この状態では何もポートレートが表示できなくなるので死亡状態のポートレート設定を行います</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc3>
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc4>既にDeadが存在するため初期値はこちらを使用します：</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc4>
+
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc1>ここの設定は終わりです。この画面の状態で「ポートレートの表示する優先順位を設定」タブを入力してください</Foxy.CustomPortraits.RCP_PG_EndEditingDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc2>もし入力内容に問題がある場合、お手数ですが「保存しないで戻る」を選択してください</Foxy.CustomPortraits.RCP_PG_EndEditingDesc2>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc3>ポートレートのパス：</Foxy.CustomPortraits.RCP_PG_EndEditingDesc3>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc4>アニメーション画像か：</Foxy.CustomPortraits.RCP_PG_EndEditingDesc4>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc5>画面表示時間(秒)：</Foxy.CustomPortraits.RCP_PG_EndEditingDesc5>
+
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc1>ポートレートの基準となるパスです</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc1>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc2>フォーマットは「{Preset名}/{グループ名}/」となっております</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc2>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc3>この後Json再度読み込み時はここに画像を置いていく形になります</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc3>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc4>アニメーションポートレートの場合選択を押してください</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc4>
+
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc5>アニメーションにするか</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc5>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc6>現在表示中のポートレートが心情などによって別のポートレートに切り替わる時間を設定してください</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc6>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc7>アニメーション画像の場合from-toの番号を入れます</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc7>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc8>fromは1固定でtoはアニメーション画像の終端の画像名(1.dds~79.ddsの場合79)を入れます</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc8>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc9>アニメーション画像の場合DDS(DXT1)固定です</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc9>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc10>拡張子</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc10>
+
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc11>状態変化時1枚の画像を表示する場合</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc11>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc12>fromは1固定でtoは何も設定しません。ですので「{Preset名}/{グループ名}/」に1.ddsもしくは1.pngを配置してください</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc12>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc13>1枚の画像だけを表示する場合の画像の拡張子を選んでください</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc13>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc14>拡張子</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc14>
+	
+	<!--PriorityWeightEditor-->
+	<Foxy.CustomPortraits.RCP_PW_Desc1>ここは「優先順位」タブです</Foxy.CustomPortraits.RCP_PW_Desc1>
+	<Foxy.CustomPortraits.RCP_PW_Desc2>画像をポーンの状態によって表示順位を決定します</Foxy.CustomPortraits.RCP_PW_Desc2>
+	<Foxy.CustomPortraits.RCP_PW_Desc3>例えばＡとＢの状態でどっちを優先的に表示したいか</Foxy.CustomPortraits.RCP_PW_Desc3>
+	<Foxy.CustomPortraits.RCP_PW_Desc4>Ａの状態はこの確率で選択されるみたいなのを決めるところです</Foxy.CustomPortraits.RCP_PW_Desc4>
+	<Foxy.CustomPortraits.RCP_PW_Desc5>プリセットを選択してください</Foxy.CustomPortraits.RCP_PW_Desc5>
+
+	<Foxy.CustomPortraits.RCP_PW_ShiftItemDesc1>グループ名の優先順位設定</Foxy.CustomPortraits.RCP_PW_ShiftItemDesc1>
+	
+	<Foxy.CustomPortraits.RCP_PW_DrawPriorityWeightsDesc1>確率設定</Foxy.CustomPortraits.RCP_PW_DrawPriorityWeightsDesc1>
+	
+	<Foxy.CustomPortraits.RCP_PW_EndEditingDesc1>ここの設定は終わりです。ダッシュボードに戻って「JSONの書き出し」ボタンを押下してください</Foxy.CustomPortraits.RCP_PW_EndEditingDesc1>
+	
+	<!--WriteJsonErrorWindow-->
+	<Foxy.CustomPortraits.RCP_WJEW_Desc1>エラーはないです決定ボタンを押下してください</Foxy.CustomPortraits.RCP_WJEW_Desc1>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc2>JSON書き込み後の再読取りで問題が起きた際のメッセージです</Foxy.CustomPortraits.RCP_WJEW_Desc2>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc3>大体はプリセットの画像がない場合と思われます。Player.logを見てみると何処で止まっているかわかります</Foxy.CustomPortraits.RCP_WJEW_Desc3>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc4>テクスチャがない以外でエラーが出るとそのプリセットは読み取れないため手修正もしくはバックアップフォルダで上書き後、ゲームの再起動をお願いします</Foxy.CustomPortraits.RCP_WJEW_Desc4>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc5>エラーの詳細は「RCP Reload JSON And Check Errors」で確認お願いします</Foxy.CustomPortraits.RCP_WJEW_Desc5>
+
+	<Foxy.CustomPortraits.RCP_WJEW_Desc6>プリセット名</Foxy.CustomPortraits.RCP_WJEW_Desc6>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc7>ERROR MESSAGE</Foxy.CustomPortraits.RCP_WJEW_Desc7>
+</LanguageData>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<Foxy.CustomPortraits.RCPReloadJSONAndCheckErrors>RCP Reload JSON And Check Errors</Foxy.CustomPortraits.RCPReloadJSONAndCheckErrors>
+	<!--Button-->
+
+
+	<!-- tabs -->
+	<Foxy.CustomPortraits.RCPRJACE_EditorTab1>プリセット一覧</Foxy.CustomPortraits.RCPRJACE_EditorTab1>
+	<Foxy.CustomPortraits.RCPRJACE_EditorTab2>JSONの再読み込み</Foxy.CustomPortraits.RCPRJACE_EditorTab2>
+	<Foxy.CustomPortraits.RCPRJACE_EditorTab3>エラー一覧</Foxy.CustomPortraits.RCPRJACE_EditorTab3>
+
+	<!--PresetStatusBrowser-->
+	<Foxy.CustomPortraits.RCPRJACE_PSB_Desc1>読み込まれているプリセットがありません。エラー一覧を見て直した後に再読み込みを行ってください</Foxy.CustomPortraits.RCPRJACE_PSB_Desc1>
+	<Foxy.CustomPortraits.RCPRJACE_PSB_Desc2>チェックがバツになっているものが読み込まれていない対象です</Foxy.CustomPortraits.RCPRJACE_PSB_Desc2>
+	<Foxy.CustomPortraits.RCPRJACE_PSB_Desc3>プリセット名：</Foxy.CustomPortraits.RCPRJACE_PSB_Desc3>
+
+	<!--PresetErrorReloader-->
+	<Foxy.CustomPortraits.RCPRJACE_PER_Desc1>エラーとなっているプリセットがありません</Foxy.CustomPortraits.RCPRJACE_PER_Desc1>
+	<Foxy.CustomPortraits.RCPRJACE_PER_Desc2>読み込みたい対象を選んでください。ここから選択項目がなくなれば読み込めています</Foxy.CustomPortraits.RCPRJACE_PER_Desc2>
+	<Foxy.CustomPortraits.RCPRJACE_PER_Desc3>プリセットの読み込み中です。しばらくかかります</Foxy.CustomPortraits.RCPRJACE_PER_Desc3>
+
+	<!--PresetErrorBrowser-->
+	<Foxy.CustomPortraits.RCPRJACE_PEB_Desc1>エラーとなっているプリセットがありません</Foxy.CustomPortraits.RCPRJACE_PEB_Desc1>
+	<Foxy.CustomPortraits.RCPRJACE_PEB_Desc2>プリセット名：</Foxy.CustomPortraits.RCPRJACE_PEB_Desc2>
+	
+
+</LanguageData>

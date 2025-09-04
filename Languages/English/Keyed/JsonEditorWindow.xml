@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	<Foxy.CustomPortraits.RCPEditor>RCP JSON Editor</Foxy.CustomPortraits.RCPEditor>
+	<Foxy.CustomPortraits.RCP_B_InputClear>Clear Input</Foxy.CustomPortraits.RCP_B_InputClear>
+	<Foxy.CustomPortraits.RCP_B_PresetCreate>Create New Preset</Foxy.CustomPortraits.RCP_B_PresetCreate>
+	<Foxy.CustomPortraits.RCP_B_WriteJson>Write to JSON</Foxy.CustomPortraits.RCP_B_WriteJson>
+	<Foxy.CustomPortraits.RCP_B_Clear>Clear</Foxy.CustomPortraits.RCP_B_Clear>
+	<Foxy.CustomPortraits.RCP_B_Select>Select</Foxy.CustomPortraits.RCP_B_Select>
+	<Foxy.CustomPortraits.RCP_B_Back>Return Without Saving</Foxy.CustomPortraits.RCP_B_Back>
+	<Foxy.CustomPortraits.RCP_B_Enter>Confirm</Foxy.CustomPortraits.RCP_B_Enter>
+	<Foxy.CustomPortraits.RCP_B_Create>Create New</Foxy.CustomPortraits.RCP_B_Create>
+	<Foxy.CustomPortraits.RCP_B_Add>Add</Foxy.CustomPortraits.RCP_B_Add>
+	<Foxy.CustomPortraits.RCP_B_AddAll>Add All</Foxy.CustomPortraits.RCP_B_AddAll>
+	<Foxy.CustomPortraits.RCP_B_Remove>Remove</Foxy.CustomPortraits.RCP_B_Remove>
+	<Foxy.CustomPortraits.RCPEditorTab1>Dashboard</Foxy.CustomPortraits.RCPEditorTab1>
+	<Foxy.CustomPortraits.RCPEditorTab2>Select Mood</Foxy.CustomPortraits.RCPEditorTab2>
+	<Foxy.CustomPortraits.RCPEditorTab3>Select Interaction</Foxy.CustomPortraits.RCPEditorTab3>
+	<Foxy.CustomPortraits.RCPEditorTab4>Distribute Interactions</Foxy.CustomPortraits.RCPEditorTab4>
+	<Foxy.CustomPortraits.RCPEditorTab5>Grouping</Foxy.CustomPortraits.RCPEditorTab5>
+	<Foxy.CustomPortraits.RCPEditorTab6>Select Portrait</Foxy.CustomPortraits.RCPEditorTab6>
+	<Foxy.CustomPortraits.RCPEditorTab7>Set Priority</Foxy.CustomPortraits.RCPEditorTab7>
+	<Foxy.CustomPortraits.RCP_DBR_SelectPreset>Select Preset</Foxy.CustomPortraits.RCP_DBR_SelectPreset>
+	<Foxy.CustomPortraits.RCP_DBR_SelectAnItem>Please select the preset you want to edit from the list below</Foxy.CustomPortraits.RCP_DBR_SelectAnItem>
+	<Foxy.CustomPortraits.RCP_DBR_SelectFrom>Selected Preset Name:</Foxy.CustomPortraits.RCP_DBR_SelectFrom>
+	<Foxy.CustomPortraits.RCP_DBR_Validate>If it is not a new preset and only "Set Priority" is checked, writing to JSON is possible</Foxy.CustomPortraits.RCP_DBR_Validate>
+	<Foxy.CustomPortraits.RCP_DBR_InputPresetName>Enter Preset Name</Foxy.CustomPortraits.RCP_DBR_InputPresetName>
+	<Foxy.CustomPortraits.RCP_DBR_InputPresetNameLable>Please enter the image name without extension located in RimWorld/CustomPortraits</Foxy.CustomPortraits.RCP_DBR_InputPresetNameLable>
+	<Foxy.CustomPortraits.RCP_DBR_InputSamePresetName>This preset name already exists. Please choose a different one</Foxy.CustomPortraits.RCP_DBR_InputSamePresetName>
+	<Foxy.CustomPortraits.RCP_DBR_EnterPresetName>Please enter a preset name:</Foxy.CustomPortraits.RCP_DBR_EnterPresetName>
+	<Foxy.CustomPortraits.RCP_DBRE_Error1>If not a new JSON, please fill in everything except Interactions</Foxy.CustomPortraits.RCP_DBRE_Error1>
+	<Foxy.CustomPortraits.RCP_DBRE_Error2>Updating only Interactions is possible, but please fill in the "Select Interaction" tab</Foxy.CustomPortraits.RCP_DBRE_Error2>
+	<Foxy.CustomPortraits.RCP_DBRE_Error3>Updating only Priority is possible, but please fill in the "Priority" tab</Foxy.CustomPortraits.RCP_DBRE_Error3>
+	<Foxy.CustomPortraits.RCP_TB_ClearSelected>Clear Selection</Foxy.CustomPortraits.RCP_TB_ClearSelected>
+	<Foxy.CustomPortraits.RCP_TB_ThoughtFilter>Filter by Mood Name:</Foxy.CustomPortraits.RCP_TB_ThoughtFilter>
+	<Foxy.CustomPortraits.RCP_TBE_RegexFilter>Invalid Regular Expression:</Foxy.CustomPortraits.RCP_TBE_RegexFilter>
+	<Foxy.CustomPortraits.RCP_IB_ClearSelected>Clear Selection</Foxy.CustomPortraits.RCP_IB_ClearSelected>
+	<Foxy.CustomPortraits.RCP_IB_InteractionFilter>Filter by Interaction Name:</Foxy.CustomPortraits.RCP_IB_InteractionFilter>
+	<Foxy.CustomPortraits.RCP_IBE_RegexFilter>Invalid Regular Expression:</Foxy.CustomPortraits.RCP_IBE_RegexFilter>
+	<Foxy.CustomPortraits.RCP_IFE_Desc1>This section summarizes how to manage names when pawns give or receive interactions such as chit-chat or insults</Foxy.CustomPortraits.RCP_IFE_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_Desc2>By deciding something like "This is the name for the one who received the insult", you can later use this modifier (name) during group editing</Foxy.CustomPortraits.RCP_IFE_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_Desc3>The reason this is not done in Group Editing is because interactions have both a sender and a receiver</Foxy.CustomPortraits.RCP_IFE_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_Desc4>Unlike moods, it is not a single-person context but a two-party relationship.</Foxy.CustomPortraits.RCP_IFE_Desc4>
+	<Foxy.CustomPortraits.RCP_IFE_Desc5>Depending on the mod, both sender and receiver may even be the same pawn</Foxy.CustomPortraits.RCP_IFE_Desc5>
+	<Foxy.CustomPortraits.RCP_IFE_PleaseSelectOne>Please select one or more in the "Select Interaction" tab</Foxy.CustomPortraits.RCP_IFE_PleaseSelectOne>
+	<Foxy.CustomPortraits.RCP_IFE_EditBaseInter>Edit Existing Interaction</Foxy.CustomPortraits.RCP_IFE_EditBaseInter>
+	<Foxy.CustomPortraits.RCP_IFE_CreateInter>Create New Interaction Name</Foxy.CustomPortraits.RCP_IFE_CreateInter>
+	<Foxy.CustomPortraits.RCP_IFE_Initiator>[Sender]</Foxy.CustomPortraits.RCP_IFE_Initiator>
+	<Foxy.CustomPortraits.RCP_IFE_Recipient>[Receiver]</Foxy.CustomPortraits.RCP_IFE_Recipient>
+	<Foxy.CustomPortraits.RCP_IFE_InitiatorInter>Please enter the modifier for the sender side of this interaction:</Foxy.CustomPortraits.RCP_IFE_InitiatorInter>
+	<Foxy.CustomPortraits.RCP_IFE_RecipientInter>Please enter the modifier for the receiver side of this interaction:</Foxy.CustomPortraits.RCP_IFE_RecipientInter>
+	<Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc1>This is the cache time. Notification will not be sent until the conversation between the two pawns has finished</Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc2>Also, if you switch portraits exactly at the end of a chit-chat, it will be too brief, so the user should set a cache time here</Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc3>Set Cache Time:</Foxy.CustomPortraits.RCP_IFE_EnterInitiatorAndRecipient_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc1>This section links the selections from the Interaction Selection list to sender/receiver names</Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc2>Please select one or more and press the Confirm button</Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc3>Please enter a summary name that groups this sender and receiver (either one is also possible):</Foxy.CustomPortraits.RCP_IFE_EditInteractionFilter_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_IRName>Sender/Receiver Names:</Foxy.CustomPortraits.RCP_IFE_IRName>
+	<Foxy.CustomPortraits.RCP_IFE_ClearSelected>Clear Selection</Foxy.CustomPortraits.RCP_IFE_ClearSelected>
+	<Foxy.CustomPortraits.RCP_IFE_InterFilt>Filter by Interaction Name:</Foxy.CustomPortraits.RCP_IFE_InterFilt>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc1>This setup is complete. Please proceed to fill in other tabs with the current screen state</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc2>If there is an issue with the input, please choose "Return Without Saving"</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc3>Sender/Receiver Names:</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc4>Interaction Name:</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc4>
+	<Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc5>Cache Time:</Foxy.CustomPortraits.RCP_IFE_EndEditting_Desc5>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc1>The cache time differs, but they point to the same interaction name</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc1>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc2>Because this was manually written JSON, the later values will overwrite in this screen</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc2>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc3>It is recommended to back up InteractionFilter.json first</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc3>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc4>Proceed?</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc4>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc5>List of targets and values to be overwritten: Overwritten Cache Time ==></Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc5>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc6>Interaction Name</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc6>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc7>Receiver</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc7>
+	<Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc8>Sender</Foxy.CustomPortraits.RCP_IFE_ConfirmCacheDurationOverride_Desc8>
+	<Foxy.CustomPortraits.RCP_IFE_RegexFilter>Invalid Regular Expression:</Foxy.CustomPortraits.RCP_IFE_RegexFilter>
+	<Foxy.CustomPortraits.RCP_GE_Desc1>This section groups pawn mood names and interaction names defined earlier</Foxy.CustomPortraits.RCP_GE_Desc1>
+	<Foxy.CustomPortraits.RCP_GE_Desc2>Without grouping, you would have to write image paths for every single mood and interaction, which would be very tedious</Foxy.CustomPortraits.RCP_GE_Desc2>
+	<Foxy.CustomPortraits.RCP_GE_Desc3>Since you probably cannot create such a huge number of images,</Foxy.CustomPortraits.RCP_GE_Desc3>
+	<Foxy.CustomPortraits.RCP_GE_Desc4>this allows you to bundle similar moods into one group name and link it with textures later</Foxy.CustomPortraits.RCP_GE_Desc4>
+	<Foxy.CustomPortraits.RCP_GE_Desc5>Please operate this screen after selecting one or more in the "Select Mood" tab or distributing them in the "Distribute Interactions" tab</Foxy.CustomPortraits.RCP_GE_Desc5>
+	<Foxy.CustomPortraits.RCP_GE_Desc6>Currently selected in "Select Interaction" tab</Foxy.CustomPortraits.RCP_GE_Desc6>
+	<Foxy.CustomPortraits.RCP_GE_Desc7>Please distribute sender/receiver in "Distribute Interactions" tab before grouping</Foxy.CustomPortraits.RCP_GE_Desc7>
+	<Foxy.CustomPortraits.RCP_GE_Desc8>Please select one or more preset names to edit</Foxy.CustomPortraits.RCP_GE_Desc8>
+	<Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc1>Create New Group</Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc1>
+	<Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc2>Edit Existing Group</Foxy.CustomPortraits.RCP_GE_CreateOrEditGroupDesc2>
+	<Foxy.CustomPortraits.RCP_GE_EnterGroupNameDesc1>Please enter group name:</Foxy.CustomPortraits.RCP_GE_EnterGroupNameDesc1>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc1>Select which mood names and interaction names to include in this group</Foxy.CustomPortraits.RCP_GE_EditGroupDesc1>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc2>Later, you will decide which texture to display with this group name</Foxy.CustomPortraits.RCP_GE_EditGroupDesc2>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc3>Selected Group Name:</Foxy.CustomPortraits.RCP_GE_EditGroupDesc3>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc4>Already Added</Foxy.CustomPortraits.RCP_GE_EditGroupDesc4>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc5>Selected Moods and Interactions</Foxy.CustomPortraits.RCP_GE_EditGroupDesc5>
+	<Foxy.CustomPortraits.RCP_GE_EditGroupDesc6>Removed from Group (Trash)</Foxy.CustomPortraits.RCP_GE_EditGroupDesc6>
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc1>This setup is complete. Please proceed to the "Select Portrait" tab</Foxy.CustomPortraits.RCP_GE_EndEditingDesc1>
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc2>If there is an issue with the input, please choose "Return Without Saving"</Foxy.CustomPortraits.RCP_GE_EndEditingDesc2>
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc3>Edited Group Name:</Foxy.CustomPortraits.RCP_GE_EndEditingDesc3>
+	<Foxy.CustomPortraits.RCP_GE_EndEditingDesc4>Moods and Interactions included in this group:</Foxy.CustomPortraits.RCP_GE_EndEditingDesc4>
+	<Foxy.CustomPortraits.RCP_PG_Desc1>This is the "Select Portrait" tab</Foxy.CustomPortraits.RCP_PG_Desc1>
+	<Foxy.CustomPortraits.RCP_PG_Desc2>Since moods etc. have been grouped in the previous step, here you link those group names with portraits</Foxy.CustomPortraits.RCP_PG_Desc2>
+	<Foxy.CustomPortraits.RCP_PG_Desc3>For example: use this portrait for chit-chat, use this portrait for insulted, etc.</Foxy.CustomPortraits.RCP_PG_Desc3>
+	<Foxy.CustomPortraits.RCP_PG_Desc4>If it’s an animation, only multiple DDS (DXT1) images are supported</Foxy.CustomPortraits.RCP_PG_Desc4>
+	<Foxy.CustomPortraits.RCP_PG_Desc5>If it’s not an animation, PNG or DDS (DXT1) images are supported</Foxy.CustomPortraits.RCP_PG_Desc5>
+	<Foxy.CustomPortraits.RCP_PG_Desc6>Please edit this tab after completing the "Grouping" tab</Foxy.CustomPortraits.RCP_PG_Desc6>
+	<Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc1>Link Portraits with Group Names</Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc2>An already linked group exists, so the default value will be used here:</Foxy.CustomPortraits.RCP_PG_EditPortraitGroupDesc2>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc1>Set Idle Portrait</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc2>This is the fallback portrait when no state is selected in the weight settings</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc2>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc3>Even if a mood image has a 99% probability, processing may miss it</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc3>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc4>This sets the portrait for when nothing is selected</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc4>
+	<Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc5>Idle already exists, so the default value will be used here:</Foxy.CustomPortraits.RCP_PG_EditIdlePortraitDesc5>
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc1>Set Dead Portrait</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc2>When a pawn dies, moods are lost</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc2>
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc3>Without this, no portrait can be displayed in dead state, so configure a portrait here</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc3>
+	<Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc4>Dead already exists, so the default value will be used here:</Foxy.CustomPortraits.RCP_PG_EditDeadPortraitDesc4>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc1>This setup is complete. Please proceed to the "Set Portrait Priority" tab</Foxy.CustomPortraits.RCP_PG_EndEditingDesc1>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc2>If there is an issue with the input, please choose "Return Without Saving"</Foxy.CustomPortraits.RCP_PG_EndEditingDesc2>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc3>Portrait Path:</Foxy.CustomPortraits.RCP_PG_EndEditingDesc3>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc4>Animated Image:</Foxy.CustomPortraits.RCP_PG_EndEditingDesc4>
+	<Foxy.CustomPortraits.RCP_PG_EndEditingDesc5>Display Time (seconds):</Foxy.CustomPortraits.RCP_PG_EndEditingDesc5>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc1>This is the base path for the portrait</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc1>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc2>Format is "{PresetName}/{GroupName}/"</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc2>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc3>After reloading JSON, images will be placed here</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc3>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc4>For animated portraits, press Select</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc4>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc5>Enable Animation</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc5>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc6>Please set the time for switching portraits when pawn states change</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc6>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc7>For animated images, enter from-to numbers</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc7>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc8>From is fixed at 1, to is the last image number (for 1.dds~79.dds, enter 79)</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc8>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc9>Animated portraits must be DDS (DXT1)</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc9>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc10>Extension</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc10>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc11>When showing a single image at state change</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc11>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc12>From is fixed at 1, to is not set. So place 1.dds or 1.png in "{PresetName}/{GroupName}/"</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc12>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc13>Please select the extension of the single image to display</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc13>
+	<Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc14>Extension</Foxy.CustomPortraits.RCP_PG_PortraitEditTemplateDesc14>
+	<Foxy.CustomPortraits.RCP_PW_Desc1>This is the "Priority" tab</Foxy.CustomPortraits.RCP_PW_Desc1>
+	<Foxy.CustomPortraits.RCP_PW_Desc2>Here you decide the display order of portraits depending on pawn states</Foxy.CustomPortraits.RCP_PW_Desc2>
+	<Foxy.CustomPortraits.RCP_PW_Desc3>For example: which to prioritize between State A and State B</Foxy.CustomPortraits.RCP_PW_Desc3>
+	<Foxy.CustomPortraits.RCP_PW_Desc4>Or how likely State A should be selected</Foxy.CustomPortraits.RCP_PW_Desc4>
+	<Foxy.CustomPortraits.RCP_PW_Desc5>Please select a preset</Foxy.CustomPortraits.RCP_PW_Desc5>
+	<Foxy.CustomPortraits.RCP_PW_ShiftItemDesc1>Set Group Priority</Foxy.CustomPortraits.RCP_PW_ShiftItemDesc1>
+	<Foxy.CustomPortraits.RCP_PW_DrawPriorityWeightsDesc1>Probability Settings</Foxy.CustomPortraits.RCP_PW_DrawPriorityWeightsDesc1>
+	<Foxy.CustomPortraits.RCP_PW_EndEditingDesc1>This setup is complete. Please return to the Dashboard and press the "Write to JSON" button</Foxy.CustomPortraits.RCP_PW_EndEditingDesc1>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc1>No errors detected. Please press Confirm button</Foxy.CustomPortraits.RCP_WJEW_Desc1>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc2>This is the message displayed when an issue occurs after reloading JSON</Foxy.CustomPortraits.RCP_WJEW_Desc2>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc3>Mostly this happens when preset images are missing. Check Player.log to see where it stopped</Foxy.CustomPortraits.RCP_WJEW_Desc3>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc4>If errors other than missing textures occur, the preset cannot be read. Please manually fix or overwrite with backup folder and restart the game</Foxy.CustomPortraits.RCP_WJEW_Desc4>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc5>For detailed errors, please check "RCP Reload JSON And Check Errors"</Foxy.CustomPortraits.RCP_WJEW_Desc5>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc6>Preset Name</Foxy.CustomPortraits.RCP_WJEW_Desc6>
+	<Foxy.CustomPortraits.RCP_WJEW_Desc7>ERROR MESSAGE</Foxy.CustomPortraits.RCP_WJEW_Desc7>
+</LanguageData>

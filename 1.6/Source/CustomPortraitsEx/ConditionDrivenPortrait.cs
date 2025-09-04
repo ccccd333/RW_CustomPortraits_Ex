@@ -69,7 +69,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     last_update_time = currentTime;
                 }
                 var mood_refs = PortraitCacheEx.Refs;
-                if (mood_refs.ContainsKey(preset_name))
+                if (mood_refs.ContainsKey(preset_name) && !PortraitCacheEx.PresetErrorMap.ContainsKey(preset_name))
                 {
 
                     if (temp_preset_name != preset_name)
@@ -100,6 +100,11 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         {
                             disp_last_update_time = Time.realtimeSinceStartup;
                         }
+                    }
+
+                    if (!mood_refs.ContainsKey(preset_name))
+                    {
+                        return def;
                     }
 
                     var refs = mood_refs[preset_name];

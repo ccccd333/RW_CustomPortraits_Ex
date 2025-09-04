@@ -64,6 +64,21 @@
   <ItemGroup>
     <Compile Include="Comp_PawnCustomPortrait.cs" />
     <Compile Include="CustomPortraitsEx\ConditionDrivenPortrait.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\CustomPortraitJsonWriter.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\JsonEditorWindow.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\ReloadJsonWithErrorsWindow.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\DashboardTab.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\GroupEditor.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\InteractionBrowser.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\InteractionFilterEditor.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\PortraitGroupEditor.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\PresetErrorBrowser.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\PresetErrorReloader.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\PresetStatusBrowser.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\PriorityWeightEditor.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\TabBase.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\ThoughtBrowser.cs" />
+    <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\WriteJsonErrorWindow.cs" />
     <Compile Include="CustomPortraitsEx\PExSetting.cs" />
     <Compile Include="CustomPortraitsEx\PlayLogEntry_Interaction_ctor.cs" />
     <Compile Include="CustomPortraitsEx\PortraitCacheEx.cs" />

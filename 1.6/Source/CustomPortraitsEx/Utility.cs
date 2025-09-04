@@ -162,5 +162,18 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 Array.Copy(flipped_color_bytes, 0, data, i + 12, 4);
             }
         }
+
+        public static string NormalizePath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return "";
+
+            // 末尾の / を全部削除
+            path = path.TrimEnd('/');
+
+            // 末尾に1つだけ / を付ける
+            return path + "/";
+        }
+
     }
 }

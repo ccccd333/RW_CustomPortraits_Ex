@@ -76,7 +76,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
             catch (Exception e)
             {
-                Log.Message($"[PortraitsEx] Please notify me if this error log is generated. wt ==> {e.Message}");
+                try
+                {
+                    Log.Message($"[PortraitsEx] Please notify me if this error log is generated. wt ==> {e.Message}");
+                }
+                catch (Exception)
+                {
+
+                }
                 //Log.Warning($"[PortraitsEx] An unrecognized error occurred. intDef.LabelCap: {intDef.LabelCap} initiator: {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull} ===> wt?: {e.Message}");
             }
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+	<Foxy.CustomPortraits.RCPReloadJSONAndCheckErrors>RCP Reload JSON And Check Errors</Foxy.CustomPortraits.RCPReloadJSONAndCheckErrors>
+	<!--Button-->
+
+
+	<!-- tabs -->
+	<Foxy.CustomPortraits.RCPRJACE_EditorTab1>Preset List</Foxy.CustomPortraits.RCPRJACE_EditorTab1>
+	<Foxy.CustomPortraits.RCPRJACE_EditorTab2>Reload JSON</Foxy.CustomPortraits.RCPRJACE_EditorTab2>
+	<Foxy.CustomPortraits.RCPRJACE_EditorTab3>Error List</Foxy.CustomPortraits.RCPRJACE_EditorTab3>
+
+	<!--PresetStatusBrowser-->
+	<Foxy.CustomPortraits.RCPRJACE_PSB_Desc1>No presets are currently loaded. Please fix the errors shown in the Error List and reload.</Foxy.CustomPortraits.RCPRJACE_PSB_Desc1>
+	<Foxy.CustomPortraits.RCPRJACE_PSB_Desc2>Items marked with an X are presets that failed to load.</Foxy.CustomPortraits.RCPRJACE_PSB_Desc2>
+	<Foxy.CustomPortraits.RCPRJACE_PSB_Desc3>Preset Name:</Foxy.CustomPortraits.RCPRJACE_PSB_Desc3>
+
+	<!--PresetErrorReloader-->
+	<Foxy.CustomPortraits.RCPRJACE_PER_Desc1>No presets with errors were found.</Foxy.CustomPortraits.RCPRJACE_PER_Desc1>
+	<Foxy.CustomPortraits.RCPRJACE_PER_Desc2>Please select the items you want to reload. If no options remain here, it means they have been successfully loaded.</Foxy.CustomPortraits.RCPRJACE_PER_Desc2>
+	<Foxy.CustomPortraits.RCPRJACE_PER_Desc3>Loading presets... this may take a while.</Foxy.CustomPortraits.RCPRJACE_PER_Desc3>
+
+	<!--PresetErrorBrowser-->
+	<Foxy.CustomPortraits.RCPRJACE_PEB_Desc1>No presets with errors were found.</Foxy.CustomPortraits.RCPRJACE_PEB_Desc1>
+	<Foxy.CustomPortraits.RCPRJACE_PEB_Desc2>Preset Name:</Foxy.CustomPortraits.RCPRJACE_PEB_Desc2>
+
+
+
+</LanguageData>

@@ -92,9 +92,11 @@
     <Compile Include="CustomPortraitsEx\Repository\Textures.cs" />
     <Compile Include="CustomPortraitsEx\Utility.cs" />
     <Compile Include="DDS.cs" />
-    <Compile Include="Dialog_PortraitPawn.cs" />
+    <Compile Include="Dialog_AdvancedPortraitPawn.cs" />
+    <Compile Include="Dialog_SimplePortraitPawn.cs" />
     <Compile Include="Extension.cs" />
     <Compile Include="GameComponent_CustomPortraits.cs" />
+    <Compile Include="GUI_FileDialog.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="ModCompatibility.cs" />
     <Compile Include="ModMain.cs" />

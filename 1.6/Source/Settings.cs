@@ -19,6 +19,11 @@ namespace Foxy.CustomPortraits {
 		public static PortraitTabPosition TabPosition => Instance.tabPosition;
 		public static bool ActionsBig => Instance.actionsBig;
 
+		public static bool Advanced {
+			get => Instance.advanced;
+			set => Instance.advanced = value;
+		}
+
 		public static Vector2 BigSize => new Vector2(BigWidth, BigHeight);
 
 		public static bool IsInspector => HasPosition(PortraitPosition.Inspector);

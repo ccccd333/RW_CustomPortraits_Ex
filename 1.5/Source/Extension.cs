@@ -114,5 +114,10 @@ namespace Foxy.CustomPortraits {
 		public static Texture2D GetPortraitTexture(this Pawn pawn, PortraitPosition? position) {
 			return PortraitCache.Get(pawn.GetPortraitName(position));
 		}
+
+		public static void LoadImageDDS(this Texture2D texture, byte[] data) {
+			DDS dds = new DDS(data);
+			dds.LoadIntoTexture(texture);
+		}
 	}
 }

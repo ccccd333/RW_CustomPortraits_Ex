@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -26,6 +27,14 @@ namespace Foxy.CustomPortraits {
 		}
 		public static string Label(string key, NamedArgument arg) {
 			return $"Foxy.CustomPortraits.{key}".Translate(arg).Trim();
+		}
+		public static void OpenDialog(Pawn pawn) {
+			if (StaticSettings.Advanced) Dialog_AdvancedPortraitPawn.Open(pawn);
+			else Dialog_SimplePortraitPawn.Open(pawn);
+		}
+
+		public static Action<Rect> GetTooltipDelegate(string text) {
+			return rect => TooltipHandler.TipRegion(rect, text);
 		}
 
 		private static void DrawPortrait(Rect rect, Pawn pawn) {

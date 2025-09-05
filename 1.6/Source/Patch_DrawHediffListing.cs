@@ -12,7 +12,7 @@ namespace Foxy.CustomPortraits {
 				TooltipHandler.TipRegion(btn, Helper.Label("SelectPortrait"));
 			}
 			if (Widgets.ButtonImage(btn, TexButton.Search)) {
-				Dialog_PortraitPawn.Open(pawn);
+				Helper.OpenDialog(pawn);
 			}
 		}
 	}

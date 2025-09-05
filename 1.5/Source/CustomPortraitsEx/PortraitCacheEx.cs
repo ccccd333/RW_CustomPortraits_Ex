@@ -627,61 +627,15 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         private static Texture2D LoadTextureDDS(byte[] data)
         {
-            DDS dds = DDS.Parse(data);
+            DDS dds = new DDS(data);
 
-            TextureFormat fmt;
-            if (dds.ddpfPixelFormat.IsDXT1)
-            {
-                fmt = TextureFormat.DXT1;
-            }
-            else if (dds.ddpfPixelFormat.IsDXT5)
-            {
-                fmt = TextureFormat.DXT5;
-                if (dds.dwWidth % 4 != 0 || dds.dwHeight % 4 != 0)
-                {
-                    throw new FormatException($"DXT5 format requires dimensions to be divisable by 4: {dds.dwWidth}x{dds.dwHeight}");
-                }
-            }
+            Texture2D tex = new Texture2D((int)dds.Width, (int)dds.Height, dds.Format, false);
+
+            if (dds.Format == TextureFormat.DXT1)
+                Utility.FlipDXT1(dds.DXT, (int)dds.Width, (int)dds.Height);
             else
-            {
-                // Not sure why I'm so pedant about exact wrong format, but I woke up after already writing this
-                if (dds.ddpfPixelFormat.dwFlags.HasFlag(DDPF.FourCC))
-                {
-                    throw new FormatException($"Unsupported pixel format: {dds.ddpfPixelFormat.StringFourCC}");
-                }
-                else if (dds.ddpfPixelFormat.dwFlags.HasFlag(DDPF.RGB))
-                {
-                    // Thankfully I stopped myself before reporting in the exact A_R_G_B_ notation
-                    if (dds.ddpfPixelFormat.dwFlags.HasFlag(DDPF.AlphaPixels))
-                        throw new FormatException($"Unsupported pixel format: ARGB");
-                    else throw new FormatException($"Unsupported pixel format: RGB");
-                }
-                else
-                {
-                    throw new FormatException($"Unsupported pixel format: unknown");
-                }
-            }
-
-            // DDSD_LINEARSIZE is required for compressed formats and DXTn are all compressed
-            if (!dds.dwFlags.HasFlag(DDSD.LinearSize))
-                throw new FormatException($"Linear size flag not set for a compressed format (0x{(uint)dds.dwFlags:X8})");
-            if (dds.dwFlags.HasFlag(DDSD.Pitch))
-                throw new FormatException($"Pitch flag set for a compressed format (0x{(uint)dds.dwFlags:X8})");
-
-            // Pixel data size should be equal to dwPitchOrLinearSize since DDSD_LINEARSIZE is required for DXT, but I can't bring myself to trust it.
-            byte[] dxt = new byte[data.Length - dds.DataOffset];
-            Buffer.BlockCopy(data, (int)dds.DataOffset, dxt, 0, data.Length - (int)dds.DataOffset);
-
-            // Maybe this is important, I dunno.
-            int mipMapCount = dds.dwFlags.HasFlag(DDSD.MipmapCount) && dds.dwMipMapCount > 1 ? (int)dds.dwMipMapCount : 1;
-
-            Texture2D tex = new Texture2D((int)dds.dwWidth, (int)dds.dwHeight, fmt, false);
-
-            if (dds.ddpfPixelFormat.IsDXT1)
-                Utility.FlipDXT1(dxt, (int)dds.dwWidth, (int)dds.dwHeight);
-            else
-                Utility.FlipDXT5(dxt, (int)dds.dwWidth, (int)dds.dwHeight);
-            tex.LoadRawTextureData(dxt);
+                Utility.FlipDXT5(dds.DXT, (int)dds.Width, (int)dds.Height);
+            tex.LoadRawTextureData(dds.DXT);
             tex.Apply();
 
             return tex;

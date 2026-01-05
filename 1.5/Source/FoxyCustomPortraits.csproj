@@ -81,6 +81,7 @@
     <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\TabBase.cs" />
     <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\ThoughtBrowser.cs" />
     <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\WriteJsonErrorWindow.cs" />
+    <Compile Include="CustomPortraitsEx\PawnAffectionContext.cs" />
     <Compile Include="CustomPortraitsEx\PExSetting.cs" />
     <Compile Include="CustomPortraitsEx\PlayLogEntry_Interaction_ctor.cs" />
     <Compile Include="CustomPortraitsEx\PortraitCacheEx.cs" />

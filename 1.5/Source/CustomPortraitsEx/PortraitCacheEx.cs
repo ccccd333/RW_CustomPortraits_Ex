@@ -630,7 +630,6 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             DDS dds = new DDS(data);
 
             Texture2D tex = new Texture2D((int)dds.Width, (int)dds.Height, dds.Format, false);
-
             if (dds.Format == TextureFormat.DXT1)
                 Utility.FlipDXT1(dds.DXT, (int)dds.Width, (int)dds.Height);
             else

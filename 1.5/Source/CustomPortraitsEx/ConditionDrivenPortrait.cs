@@ -26,12 +26,15 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
 
         private static float last_update_time = Time.realtimeSinceStartup;
-        private static float seconds_interval = 0.1f;
+        private static float frame_interval_seconds = 0.1f;
+        private static bool portrait_skip_on_lag = true;
 
         private static float disp_last_update_time = Time.realtimeSinceStartup;
 
         public static void Reset()
         {
+            // ゲームロード開始時などに入ってくる
+
             //temp.Clear();
             temp_index = 0;
             temp_refs_key = "";
@@ -40,6 +43,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             temp_display_duration = PortraitCacheEx.Settings.display_duration;
             last_update_time = Time.realtimeSinceStartup;
             disp_last_update_time = Time.realtimeSinceStartup;
+
+            // settings反映
+            portrait_skip_on_lag = PortraitCacheEx.Settings.portrait_animation.portrait_skip_on_lag;
+            frame_interval_seconds = PortraitCacheEx.Settings.portrait_animation.frame_interval_seconds;
         }
 
 
@@ -60,13 +67,38 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 }
 
                 bool nextPortrait = false;
+                int skip_count = 1;
                 // ゲーム内時間だとFPSに依存してしまうのでUnityの内部タイマーでフレーム計算する
-                float currentTime = Time.realtimeSinceStartup;
-                if (currentTime - last_update_time >= seconds_interval)
+                float current_time = Time.realtimeSinceStartup;
+
+                if (current_time - last_update_time >= frame_interval_seconds)
                 {
-                    // 大体60FPSで4フレーム目くらいで次の画像表示する
+                    // TODO:ここはアニメーション機能前提に組んでいるのでちょっと変だけど。その内直すかも
+
+                    // 大体0.1sだと60FPSで4か6フレーム目くらいで次の画像表示する
                     nextPortrait = true;
-                    last_update_time = currentTime;
+
+                    if (portrait_skip_on_lag) { 
+                        // コロニー終盤だとFPSが低下するので、それ用に表示画像のスキップ機能を追加
+
+                        // 現在の時刻と前フレームの時刻を計算して、frame_interval_secondsに
+                        // 収まらない場合はその分スキップする。
+                        float delta = current_time - last_update_time;
+                        skip_count = Mathf.FloorToInt(delta / frame_interval_seconds);
+                        // ここでcurrent_timeを入れると余り分が消失してしまう
+                        // スキップタイミングはframe_interval_secondsの1倍の時は1枚画像送りでいいが
+                        // 2倍の場合は0.21や0.22と0.0Xとなる。この余りも次インターバルに含めるため。
+                        last_update_time += skip_count * frame_interval_seconds;
+                        //if (skip_count > 1)
+                        //{
+                        //    Log.Message($"[PortraitsEx] Skip Cound {skip_count} current_time {current_time} last_update_time {last_update_time}");
+                        //}
+                    }
+                    else
+                    {
+                        last_update_time = current_time;
+
+                    }
                 }
                 var mood_refs = PortraitCacheEx.Refs;
                 if (mood_refs.ContainsKey(preset_name) && !PortraitCacheEx.PresetErrorMap.ContainsKey(preset_name))
@@ -81,15 +113,15 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     }
                     else
                     {
-                        //Log.Message($"[PortraitsEx] disp_last_update_time ==> {disp_last_update_time} currentTime ==> {currentTime} temp_display_duration ==> {temp_display_duration}");
+                        //Log.Message($"[PortraitsEx] disp_last_update_time ==> {disp_last_update_time} current_time ==> {current_time} temp_display_duration ==> {temp_display_duration}");
 
                         // 毎回後続の重い処理を実行したくないのでjsonのdisplay_durationの間は退避した情報で
                         // アニメーションor画像表示を行う。
-                        if (currentTime - disp_last_update_time <= temp_display_duration)
+                        if (current_time - disp_last_update_time <= temp_display_duration)
                         {
                             if (nextPortrait)
                             {
-                                return AdvanceToNextPortrait(def);
+                                return AdvanceToNextPortrait(def, skip_count);
                             }
                             else
                             {
@@ -123,7 +155,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     {
                         Dictionary<string, float> affection_impact_map;
                         bool is_value_fetched = false;
-                        affection_impact_map = BuildAffectionImpactMap(pawn, out is_value_fetched);
+                        affection_impact_map = PawnAffectionContext.BuildAffectionImpactMap(pawn, out is_value_fetched);
 
                         if (!is_value_fetched)
                         {
@@ -297,7 +329,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         if (nextPortrait)
                         {
 
-                            return AdvanceToNextPortrait(def);
+                            return AdvanceToNextPortrait(def, skip_count);
                         }
                         else
                         {
@@ -344,13 +376,13 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
         }
 
-        private static Texture2D AdvanceToNextPortrait(Texture2D def)
+        private static Texture2D AdvanceToNextPortrait(Texture2D def, int skip_count)
         {
             if (temp.Count <= 0) return def;
             if (temp_index < temp.Count)
             {
                 Texture2D tx = temp[temp_index];
-                if (temp_animation_mode) ++temp_index;
+                if (temp_animation_mode) temp_index += skip_count;
                 return tx;
             }
             else
@@ -380,71 +412,71 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
         }
 
-        private static Dictionary<string, float> BuildAffectionImpactMap(Pawn pawn, out bool is_value_fetched)
-        {
-            // 別スレッドかどうか確認しておく ver1.6以降→要確認
-            //Log.Message($"Thread ID: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
+        //private static Dictionary<string, float> BuildAffectionImpactMap(Pawn pawn, out bool is_value_fetched)
+        //{
+        //    // 別スレッドかどうか確認しておく ver1.6以降→要確認
+        //    //Log.Message($"Thread ID: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
 
-            is_value_fetched = false;
-            Dictionary<string, float> affection_impact_map = new Dictionary<string, float>();
-            List<Thought> outThoughts = new List<Thought>();
-            var thoughts = pawn.needs?.mood?.thoughts;
+        //    is_value_fetched = false;
+        //    Dictionary<string, float> affection_impact_map = new Dictionary<string, float>();
+        //    List<Thought> outThoughts = new List<Thought>();
+        //    var thoughts = pawn.needs?.mood?.thoughts;
 
-            // メカノイドなどは心情を持たない
-            if (thoughts == null) { return affection_impact_map; }
+        //    // メカノイドなどは心情を持たない
+        //    if (thoughts == null) { return affection_impact_map; }
 
-            thoughts.GetAllMoodThoughts(outThoughts);
+        //    thoughts.GetAllMoodThoughts(outThoughts);
 
 
-            // 心情の文字と値のリスト化
-            foreach (var need in outThoughts)
-            {
-                if (need == null || need.LabelCap == null)
-                {
-                    // 豪華な宿舎みたいにstage[0]がnullのものがあったりする。
-                    // なのでこれはそれ用
-                    //Log.Warning($"[PortraitsEx] WARN: need, LabelCap is null");
-                    continue;
-                }
+        //    // 心情の文字と値のリスト化
+        //    foreach (var need in outThoughts)
+        //    {
+        //        if (need == null || need.LabelCap == null)
+        //        {
+        //            // 豪華な宿舎みたいにstage[0]がnullのものがあったりする。
+        //            // なのでこれはそれ用
+        //            //Log.Warning($"[PortraitsEx] WARN: need, LabelCap is null");
+        //            continue;
+        //        }
 
-                try
-                {
-                    // TODO:心情の値のほうで重みをつけるようにするかもしれない。
-                    if (affection_impact_map.ContainsKey(need.LabelCap))
-                    {
-                        float weight1 = affection_impact_map[need.LabelCap];
-                        float weight2 = need.MoodOffset();
-                        if (weight1 < weight2) affection_impact_map[need.LabelCap] = weight2;
-                    }
-                    else
-                    {
-                        affection_impact_map.Add(need.LabelCap, need.MoodOffset());
-                    }
-                }
-                catch (Exception)
-                {
-                    //Log.Warning($"[PortraitsEx] WARN?(Processing will continue) Exception for need.LabelCap={need.LabelCap}: {e}");
-                    affection_impact_map.Add(need.LabelCap, 1.0f);
-                }
+        //        try
+        //        {
+        //            // TODO:心情の値のほうで重みをつけるようにするかもしれない。
+        //            if (affection_impact_map.ContainsKey(need.LabelCap))
+        //            {
+        //                float weight1 = affection_impact_map[need.LabelCap];
+        //                float weight2 = need.MoodOffset();
+        //                if (weight1 < weight2) affection_impact_map[need.LabelCap] = weight2;
+        //            }
+        //            else
+        //            {
+        //                affection_impact_map.Add(need.LabelCap, need.MoodOffset());
+        //            }
+        //        }
+        //        catch (Exception)
+        //        {
+        //            //Log.Warning($"[PortraitsEx] WARN?(Processing will continue) Exception for need.LabelCap={need.LabelCap}: {e}");
+        //            affection_impact_map.Add(need.LabelCap, 1.0f);
+        //        }
 
-            }
+        //    }
 
-            is_value_fetched = true;
+        //    is_value_fetched = true;
 
-            // インタラクションで、ポーンがかかわったことを返却する
-            PlayLogEntry_Interaction_ctor.CleanupExpiredAndExcessLogs();
-            List<string> pawn_interaction_list = PlayLogEntry_Interaction_ctor.GetAllKeysByPawnTrimmedFinal(pawn);
+        //    // インタラクションで、ポーンがかかわったことを返却する
+        //    PlayLogEntry_Interaction_ctor.CleanupExpiredAndExcessLogs();
+        //    List<string> pawn_interaction_list = PlayLogEntry_Interaction_ctor.GetAllKeysByPawnTrimmedFinal(pawn);
 
-            foreach (var key in pawn_interaction_list)
-            {
-                if (!affection_impact_map.ContainsKey(key))
-                {
-                    affection_impact_map[key] = 1.0f;
-                }
-            }
+        //    foreach (var key in pawn_interaction_list)
+        //    {
+        //        if (!affection_impact_map.ContainsKey(key))
+        //        {
+        //            affection_impact_map[key] = 1.0f;
+        //        }
+        //    }
 
-            return affection_impact_map;
-        }
+        //    return affection_impact_map;
+        //}
 
         private static List<KeyValuePair<string, string>> FilterGroupMatches(Refs refs, Dictionary<string, float> mood)
         {

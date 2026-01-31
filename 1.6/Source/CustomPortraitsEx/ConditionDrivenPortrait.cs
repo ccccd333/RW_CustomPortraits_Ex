@@ -155,7 +155,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     {
                         Dictionary<string, float> affection_impact_map;
                         bool is_value_fetched = false;
-                        affection_impact_map = PawnAffectionContext.BuildAffectionImpactMap(pawn, out is_value_fetched);
+                        affection_impact_map = PawnAffectionContext.ComposeAffectionImpactMap(pawn, out is_value_fetched);
 
                         if (!is_value_fetched)
                         {

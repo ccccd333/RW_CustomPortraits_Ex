@@ -97,16 +97,17 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         }
 
         // 徴兵中
-        public static void AppendCombatContextImpact(Pawn pawn, Dictionary<string, float> existing_impact_map)
+        public static void AppendCombatContextImpact(Pawn pawn, Dictionary<string, float> affection_impact_map)
         {
-            Dictionary<string, float> affection_impact_map = new Dictionary<string, float>();
+            //Dictionary<string, float> affection_impact_map = new Dictionary<string, float>();
             
             bool drafted = pawn.drafter?.Drafted ?? false;
 
             //Log.Message($"[PortraitsEx] CombatContext ==> drafted? {drafted}");
-
-            affection_impact_map["CombatContext"] = 1.0f;
-
+            if (drafted)
+            {
+                affection_impact_map["CombatContext"] = 1.0f;
+            }
         }
     }
 }

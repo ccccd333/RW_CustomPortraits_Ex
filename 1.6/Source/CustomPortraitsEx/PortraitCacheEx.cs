@@ -67,8 +67,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         public static List<string> ReadPresetJson(string preset_name)
         {
+            // 再読取り側、mod設定ページから呼び出し
+
             List<string> error_message = new List<string>();
 
+            // TODO:やる気になったら、再読み込み時とjsonが読み取れない場合はテクスチャの削除をする
+            // メモリリークしたっていう人がいれば優先で対応
             if (Refs.ContainsKey(preset_name))
             {
                 Refs.Remove(preset_name);
@@ -96,7 +100,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             {
                 JObject root = JObject.Parse(File.ReadAllText(@files[0].FullName));
                 Refs r = new Refs();
-
+                // TODO:ここもリファクタリング必要・・・
                 foreach (var token in root["conditions"])
                 {
                     var mood_prop = (JProperty)token;
@@ -136,6 +140,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         else if (key == "priority_weights")
                         {
                             PriorityWeights(preset_name, key, value, r);
+                        }
+                        else if (key == "interrupt")
+                        {
+                            Interrupt(preset_name, key, value, r);
                         }
                         else
                         {
@@ -195,7 +203,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 JObject root = JObject.Parse(File.ReadAllText(@file.FullName));
                 string preset_name = root["preset_name"].ToString();
                 Refs r = new Refs();
-
+                // TODO:やる気になったら、再読み込み時とjsonが読み取れない場合はテクスチャの削除をする
+                // メモリリークしたっていう人がいれば優先で対応
                 foreach (var token in root["conditions"])
                 {
                     var mood_prop = (JProperty)token;
@@ -235,6 +244,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         else if (key == "priority_weights")
                         {
                             PriorityWeights(preset_name, key, value, r);
+                        }
+                        else if(key == "interrupt")
+                        {
+                            Interrupt(preset_name, key, value, r);
                         }
                         else
                         {
@@ -474,6 +487,142 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
 
         }
+
+        private static void Interrupt(string preset_name, string k, JToken n, Refs r)
+        {
+            Log.Message($"[PortraitsEx] Interrupt ==> Target preset: {preset_name}");
+            try
+            {
+                PortraitInterrupt interr = new PortraitInterrupt();
+                bool enabled_monitor = false;
+                foreach (var v in n)
+                {
+                    
+                    var obj = (JProperty)v;
+                    string Refs_key = obj.Name;
+
+                    JToken intrrvalue = obj.Value;
+
+
+                    if (Refs_key == "monitors")
+                    {
+
+                        if (intrrvalue is JArray monitors_array)
+                        {
+                            foreach (var monitors_value in monitors_array)
+                            {
+                                string monitor_value = monitors_value.ToString();
+
+                                if (monitor_value == PortraitContextKeys.PAIN_INCREASE)
+                                {
+                                    interr.enabled_monitors[(int)MonitorType.PainIncrease] = true;
+                                    enabled_monitor = true;
+                                }
+                                else if (monitor_value == PortraitContextKeys.DOWNED)
+                                {
+                                    interr.enabled_monitors[(int)MonitorType.Downed] = true;
+                                    enabled_monitor = true;
+
+                                }
+                            }
+                        }
+                    }
+                    else if(Refs_key == "monitor_behaviors")
+                    {
+                        interr.monitor_behaviors.LoadFromJson(intrrvalue);
+                    }
+                    else if (Refs_key == "group")
+                    {
+                        foreach (var iv in intrrvalue)
+                        {
+                            var prop = (JProperty)iv;
+
+                            string g_k = prop.Name;
+
+                            JToken value = prop.Value;
+
+                            foreach (var iiv in (JArray)prop.Value)
+                            {
+                                var iRefs_key = iiv.ToString();
+                                if (!interr.group_filter.ContainsKey(iRefs_key))
+                                {
+                                    interr.group_filter.Add(iRefs_key, g_k);
+
+                                    Log.Message($"[PortraitsEx] Group ==> Target preset: {preset_name} Group Key ==> {g_k} Value ==> {Refs_key}");
+                                }
+                            }
+                        }
+                    }
+                    else if (Refs_key == "priority_weights")
+                    {
+                        foreach (var iv in intrrvalue)
+                        {
+                            PriorityWeights pw = new PriorityWeights();
+                            var iobj = (JProperty)iv;
+                            string iRefs_key = iobj.Name;
+
+                            JToken wvalue = iobj.Value;
+
+                            pw.filter_name = iRefs_key;
+                            foreach (var vvv in wvalue)
+                            {
+                                var nw = (JProperty)vvv;
+                                string nkey = nw.Name;
+                                JToken nvalue = nw.Value;
+
+                                if (nkey == "category")
+                                {
+                                    if (nvalue is JValue category)
+                                    {
+                                        pw.category = (PriorityWeightCategory)Enum.ToObject(typeof(PriorityWeightCategory), category.Value<int>());
+                                    }
+                                }
+                                else if (nkey == "weight")
+                                {
+
+                                    if (nvalue is JValue weight)
+                                    {
+                                        pw.weight = weight.Value<int>();
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("The preset JSON definition is incorrect." + preset_name);
+                                }
+                            }
+
+                            if (interr.priority_weights.ContainsKey(iRefs_key))
+                            {
+                                Log.Message($"[PortraitsEx] Duplicate priority weights detected. ==> Target preset: {preset_name} Duplicate Key: {iRefs_key}");
+                            }
+                            else
+                            {
+                                interr.priority_weights.Add(iRefs_key, pw);
+                                interr.priority_weight_order.Add(iRefs_key);
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        throw new Exception("The preset JSON definition is incorrect." + preset_name);
+                    }
+
+                }
+
+                if (enabled_monitor)
+                {
+                    interr.interrupt_enabled = true;
+                    r.interrupt = interr;
+                }
+            }
+            catch (Exception e)
+            {
+                AddPresetLoadError(preset_name, "An error occurred while loading the priority_weights key in the preset. Please review the JSON that defines \"priority_weights\" in the preset.");
+                throw e;
+            }
+        }
+
 
         private static Textures Textures(string preset_name, string k, JToken n, Refs r)
         {

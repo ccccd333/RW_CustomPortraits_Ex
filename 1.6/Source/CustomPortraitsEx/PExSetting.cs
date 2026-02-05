@@ -17,12 +17,15 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             portrait_animation = new PortraitAnimationSettings();
             portrait_animation.portrait_skip_on_lag = false;
             portrait_animation.frame_interval_seconds = 0.1f;
+            interrupt_fallback_to_steady = false;
         }
 
         public float display_duration { get; set; }
         public LogRetention recipient_log_retention { get; set; } = new LogRetention();
         public LogRetention initiator_log_retention { get; set; } = new LogRetention();
         public PortraitAnimationSettings portrait_animation { get; set; }
+
+        public bool interrupt_fallback_to_steady { get; set; }
     }
 
     public class LogRetention

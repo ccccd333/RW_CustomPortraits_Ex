@@ -10,6 +10,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         public Dictionary<string, Textures> txs = new Dictionary<string, Textures>();
         public Dictionary<string, string> group_filter = new Dictionary<string, string>();
         public Dictionary<string, PriorityWeights> priority_weights = new Dictionary<string, PriorityWeights>();
+        public PortraitInterrupt interrupt = new PortraitInterrupt();
+
         public List<string> priority_weight_order = new List<string>();
         public string fallback_mood = "";
         public string fallback_mood_on_death = "";

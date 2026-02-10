@@ -1,9 +1,11 @@
-﻿using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
+﻿using CustomPortraits;
+using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
 using HarmonyLib;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -39,14 +41,54 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         public static bool Prefix(InteractionDef intDef, Pawn initiator, Pawn recipient, List<RulePackDef> extraSentencePacks)
         {
             // PlayLog.Add()の引数に使われるPlayLogEntry_Interactionのctor
+
+            // Pawn側でインタラクト結果が取れるならPublicizerでIL書き換え検討
+            // 現時点では存在するか不明。近似できるMODの機能があれば参考にする。
+            // と言っても多分ポーン毎であってもあまりパフォーマンス的に変わらないと思われる。
+
+            // セーブデータ(XML)にはInteractで調べるとPlayLogEntry_Interactionのみが引っかかる
+            // なので、本気でポーン毎にインタラクトを持たせているのならセーブデータにあってもいいはずだがないことから
+            // 期待しない。
+
+            // Pawn_InteractionsTrackerにlastInteractionDefとあるが、そもそも他modはPlayLog.Addを使っている。
+            // astInteractionDefを更新するにはTryInteractWithメソッドだが、使ってるのはない。
+            // 呼ばれているかは確認してない。殆どPlayLog.Addの認識。
+
+            // InteractionSelectionMapが大きくなるようならスレッド化検討
+
+            // 相互インタラクトは、ポートレート設定されているものを対象としているため1秒に1回あるかないか
+            // 必要ない認識
+            // povインタラクトも増えたら考える
+
+            // TODO:ポートレート設定した対象のみに絞る→ver1.3.2対応
             try
             {
-                // 別スレッドかどうか確認しておく ver1.6以降→要確認
+                // 別スレッドかどうか確認しておく Rimworld ver1.6以降→要確認
                 // もしスレッドIDが違う場合はlock
                 //Log.Message($"Thread ID: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
                 if (!PortraitCacheEx.IsAvailable) return true;
 
-                Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
+                if (Settings.Instance.debug)
+                    Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
+                
+                //var sw = Stopwatch.StartNew();
+                if (!(initiator.HasPortraitName(null) || initiator.HasPortraitName(PortraitPosition.Inspector)) && 
+                    !(recipient.HasPortraitName(null) || recipient.HasPortraitName(PortraitPosition.Inspector)))
+                {
+                    // ポートレート切替機能を利用していないポーン同士の会話などははじく
+
+                    // 最初は2368 ticksその後は12 ticks程度
+                    //sw.Stop();
+                    if (Settings.Instance.debug)
+                    {
+                        Log.Message($"[PortraitsEx] Skip: no portrait name (Inspector/Default) {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
+                        //Log.Message($"{sw.ElapsedTicks}");
+                    }
+
+                    return true;
+                }
+
+
                 CleanupExpiredAndExcessLogs();
 
                 var ismap = PortraitCacheEx.InteractionSelectionMap;

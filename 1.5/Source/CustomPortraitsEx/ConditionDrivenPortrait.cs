@@ -219,6 +219,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                 }
                             }
 
+                            
                             if (!is_interrupt_active)
                             {
                                 // ポーンが生きていて、割り込み処理(ダメージ受けた系)ではない場合は

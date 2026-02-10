@@ -68,23 +68,13 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 //Log.Message($"Thread ID: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
                 if (!PortraitCacheEx.IsAvailable) return true;
 
-                if (Settings.Instance.debug)
-                    Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
+                Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
                 
                 //var sw = Stopwatch.StartNew();
                 if (!(initiator.HasPortraitName(null) || initiator.HasPortraitName(PortraitPosition.Inspector)) && 
                     !(recipient.HasPortraitName(null) || recipient.HasPortraitName(PortraitPosition.Inspector)))
                 {
                     // ポートレート切替機能を利用していないポーン同士の会話などははじく
-
-                    // 最初は2368 ticksその後は12 ticks程度
-                    //sw.Stop();
-                    if (Settings.Instance.debug)
-                    {
-                        Log.Message($"[PortraitsEx] Skip: no portrait name (Inspector/Default) {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
-                        //Log.Message($"{sw.ElapsedTicks}");
-                    }
-
                     return true;
                 }
 

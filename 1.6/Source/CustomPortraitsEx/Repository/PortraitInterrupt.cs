@@ -38,7 +38,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
 
         public MonitorBehaviors monitor_behaviors = new MonitorBehaviors();
 
-        public Dictionary<string, string> group_filter = new Dictionary<string, string>();
+        public Dictionary<string, GroupPatternEntry> group_filter = new Dictionary<string, GroupPatternEntry>();
         public Dictionary<string, PriorityWeights> priority_weights = new Dictionary<string, PriorityWeights>();
         public List<string> priority_weight_order = new List<string>();
     }

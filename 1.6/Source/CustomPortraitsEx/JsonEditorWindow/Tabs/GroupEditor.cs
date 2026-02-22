@@ -110,11 +110,11 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow.Tabs
                 temp_group_filter.Clear();
                 foreach (var kv in refs.group_filter)
                 {
-                    if (!temp_group_filter.ContainsKey(kv.Value))
+                    if (!temp_group_filter.ContainsKey(kv.Value.key))
                     {
-                        temp_group_filter[kv.Value] = new List<string>();
+                        temp_group_filter[kv.Value.key] = new List<string>();
                     }
-                    temp_group_filter[kv.Value].Add(kv.Key);
+                    temp_group_filter[kv.Value.key].Add(kv.Key);
                 }
 
                 listing.Label(Helper.Label("RCP_GE_CreateOrEditGroupDesc2"));

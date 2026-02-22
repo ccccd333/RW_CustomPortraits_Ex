@@ -1,4 +1,5 @@
 ﻿using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
+using Foxy.CustomPortraits.CustomPortraitsEx.Repository.PatternMatching;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RimWorld;
@@ -20,7 +21,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         public static InteractionSelectionMap InteractionSelectionMap = new InteractionSelectionMap();
 
-        
+
         private static readonly string Setting = "Setting.json";
 
         private static DirectoryInfo RimWorldRootDirectory { get; } = new DirectoryInfo(GenFilePaths.ModsFolderPath).Parent;
@@ -78,7 +79,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 Refs.Remove(preset_name);
             }
 
-            if (PresetErrorMap.ContainsKey(preset_name)) {
+            if (PresetErrorMap.ContainsKey(preset_name))
+            {
                 PresetErrorMap.Remove(preset_name);
             }
 
@@ -245,7 +247,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         {
                             PriorityWeights(preset_name, key, value, r);
                         }
-                        else if(key == "interrupt")
+                        else if (key == "interrupt")
                         {
                             Interrupt(preset_name, key, value, r);
                         }
@@ -294,12 +296,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     if (cont == "textures")
                     {
                         Log.Message($"[PortraitsEx] Texture Key ==> Target preset: {preset_name} ==> {Refs_key} ==> {cont}");
-                        var tx = Textures(preset_name, cont, prop_n.Value, r);
+                        var tx = Textures(preset_name, Refs_key, cont, prop_n.Value, r);
                         r.txs.Add(Refs_key, tx);
-                        if (Utility.IsRegexPattern(Refs_key))
-                        {
-                            r.txs_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
-                        }
+                        //if (Utility.IsRegexPattern(Refs_key))
+                        //{
+                        //    r.txs_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
+                        //}
                     }
 
                 }
@@ -376,11 +378,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     if (Utility.IsRegexPattern(intf_key))
                     {
                         //Log.Message($"[PortraitsEx] InteractionFilter ==> Target preset: {preset_name} ADDREGEX");
-                        InteractionSelectionMap.intf_regex_cache.Add(intf_key, new Regex(intf_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
+                        InteractionSelectionMap.intf_regex_cache.Add(intf_key, PatternMatcherFactory.Create(intf_key));
                     }
                     Log.Message($"[PortraitsEx] InteractionFilter ==> Target preset: {preset_name} Key: {intf_key} matched_initiator_key: {intf.matched_initiator_key} matched_recipient_key: {intf.matched_recipient_key}");
                 }
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 AddPresetLoadError(preset_name, "An error occurred while loading InteractionFilter. Please review the JSON that defines \"interaction_filter\" in the preset.");
                 throw e;
@@ -391,6 +394,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             Log.Message($"[PortraitsEx] Group ==> Target preset: {preset_name}");
             try
             {
+                Dictionary<string, List<string>> group_alias_map = new Dictionary<string, List<string>>();
+
                 foreach (var token in n)
                 {
                     var prop = (JProperty)token;
@@ -402,15 +407,39 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     foreach (var v in (JArray)prop.Value)
                     {
                         var Refs_key = v.ToString();
-                        if (!r.group_filter.ContainsKey(Refs_key))
+                        if (Refs_key.StartsWith("@"))
                         {
-                            r.group_filter.Add(Refs_key, g_k);
+                            string ref_group_key = Refs_key.Substring(1);
+                            if (!group_alias_map.TryGetValue(ref_group_key, out var list))
+                            {
+                                list = new List<string>();
+                                group_alias_map[ref_group_key] = list;
+                            }
+
+                            list.Add(g_k);
+                        }
+                        else if (!r.group_filter.ContainsKey(Refs_key))
+                        {
+                            r.group_filter.Add(Refs_key, new GroupPatternEntry(g_k));
                             if (Utility.IsRegexPattern(Refs_key))
                             {
-                                r.g_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
+                                r.g_regex_cache.Add(Refs_key, PatternMatcherFactory.Create(Refs_key));
                             }
 
                             Log.Message($"[PortraitsEx] Group ==> Target preset: {preset_name} Group Key ==> {g_k} Value ==> {Refs_key}");
+                        }
+                    }
+                }
+
+                // 参照関係の解決
+                if (group_alias_map.Count > 0)
+                {
+                    foreach (var group in r.group_filter)
+                    {
+                        if (group_alias_map.TryGetValue(group.Value.key, out var list))
+                        {
+                            group.Value.alias_targets = list;
+                            Log.Message($"[PortraitsEx] CrossRef Group ==> Group Key ==> {group.Value.key} Aliases ==> {string.Join(", ", list)}");
                         }
                     }
                 }
@@ -471,10 +500,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     {
                         r.priority_weights.Add(Refs_key, pw);
                         r.priority_weight_order.Add(Refs_key);
-                        if (Utility.IsRegexPattern(Refs_key))
-                        {
-                            r.pw_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
-                        }
+                        //if (Utility.IsRegexPattern(Refs_key))
+                        //{
+                        //    r.pw_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
+                        //}
                     }
 
                 }
@@ -497,7 +526,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 bool enabled_monitor = false;
                 foreach (var v in n)
                 {
-                    
+
                     var obj = (JProperty)v;
                     string Refs_key = obj.Name;
 
@@ -527,7 +556,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                             }
                         }
                     }
-                    else if(Refs_key == "monitor_behaviors")
+                    else if (Refs_key == "monitor_behaviors")
                     {
                         interr.monitor_behaviors.LoadFromJson(intrrvalue);
                     }
@@ -546,7 +575,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                 var iRefs_key = iiv.ToString();
                                 if (!interr.group_filter.ContainsKey(iRefs_key))
                                 {
-                                    interr.group_filter.Add(iRefs_key, g_k);
+                                    interr.group_filter.Add(iRefs_key, new GroupPatternEntry(g_k));
 
                                     Log.Message($"[PortraitsEx] Group ==> Target preset: {preset_name} Group Key ==> {g_k} Value ==> {Refs_key}");
                                 }
@@ -624,13 +653,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         }
 
 
-        private static Textures Textures(string preset_name, string k, JToken n, Refs r)
+        private static Textures Textures(string preset_name, string refs_key, string k, JToken n, Refs r)
         {
             //Log.Message($"[PortraitsEx] Textures ==> Target preset: {preset_name}");
 
             Textures tx = new Textures();
             try
             {
+                if(PresetErrorMap.TryGetValue(preset_name, out var list) && list.Count > 0)
+                {
+                    Log.Message($"[PortraitsEx] Textures ==> Target preset: {preset_name} has errors. Skip loading textures.");
+                    return tx;
+                }
+
                 foreach (var token in n)
                 {
                     var prop = (JProperty)token;
@@ -767,6 +802,41 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
             catch (Exception e)
             {
+                Log.Warning($"[PortraitsEx] Texture Load Error: DeleteTextureList ==>");
+
+                if (r.txs.Count > 0)
+                {
+                    foreach (var tex_pair in r.txs)
+                    {
+                        foreach (var tex in tex_pair.Value.txs)
+                        {
+                            if (tex != null)
+                            {
+                                UnityEngine.Object.Destroy(tex);
+                            }
+                        }
+                        Log.Message($"DeleteTexture ==>{tex_pair.Key} {tex_pair.Value.file_base_path}: {tex_pair.Value.file_path_first} ~ {tex_pair.Value.file_path_second}");
+                    }
+
+                    r.txs.Clear();
+                }
+
+                // 既にロード済みのテクスチャを解放
+                if (tx.txs.Count > 0)
+                {
+                    foreach (var tex in tx.txs)
+                    {
+                        if (tex != null)
+                        {
+                            UnityEngine.Object.Destroy(tex);
+                        }
+                    }
+
+                    Log.Message($"DeleteTexture ==>{refs_key} {tx.file_base_path}: {tx.file_path_first} ~ {tx.file_path_second}");
+
+                    tx.txs.Clear();
+                }
+
                 AddPresetLoadError(preset_name, e.Message);
                 throw e;
             }

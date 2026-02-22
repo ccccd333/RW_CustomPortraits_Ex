@@ -91,9 +91,14 @@
     <Compile Include="CustomPortraitsEx\PortraitCacheEx.cs" />
     <Compile Include="CustomPortraitsEx\PortraitContextKeys.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Group.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\GroupPatternEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\InteractionFilter.cs" />
     <Compile Include="CustomPortraitsEx\Repository\InteractionSelectionMap.cs" />
     <Compile Include="CustomPortraitsEx\Repository\MonitorBehaviors.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\IPatternMatcher.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\PatternMatcherFactory.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\RegexPattern.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\SimpleWildcardPattern.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PawnCacheEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PortraitInterrupt.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PriorityWeights.cs" />

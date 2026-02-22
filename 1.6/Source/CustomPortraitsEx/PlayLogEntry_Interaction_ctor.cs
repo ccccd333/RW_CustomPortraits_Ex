@@ -97,10 +97,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     var filter = intef.Value;
                     if (!filter.is_recipient && !filter.is_initiator) continue;
                     //Log.Message($"[PortraitsEx] intef.Key {intef.Key}");
-                    if (ismap.intf_regex_cache.ContainsKey(intef.Key))
+                    if (ismap.intf_regex_cache != null && ismap.intf_regex_cache.TryGetValue(intef.Key, out var matcher))
                     {
-                        var reg = ismap.intf_regex_cache[intef.Key];
-                        if (reg.IsMatch(intDef.LabelCap))
+                        if (matcher.IsMatch(intDef.LabelCap))
                         {
                             //Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} intef.Key {intef.Key}");
                             PushDict(intDef.LabelCap, filter, initiator, recipient);

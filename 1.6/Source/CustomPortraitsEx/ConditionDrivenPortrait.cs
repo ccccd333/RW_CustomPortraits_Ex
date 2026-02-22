@@ -1,5 +1,7 @@
 ﻿
 using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
+using Foxy.CustomPortraits.CustomPortraitsEx.Repository.PatternMatching;
+using HarmonyLib;
 using Newtonsoft.Json.Linq;
 using RimWorld;
 using System;
@@ -271,16 +273,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
             is_resolved = false;
 
-
-
-            //foreach(var k in refs.group_filter)
+            //foreach (var k in refs.group_filter)
             //{
-            //    Log.Message($"[PortraitsEx] refs.group_filter ==> Key {k.Key} Value {k.Value}");
+            //    Log.Message($"[PortraitsEx] refs.group_filter ==> Key {k.Key} Value {k.Value.key}");
             //}
 
-            //foreach (var k in mood)
+            //foreach (var k in refs.g_regex_cache)
             //{
-            //    Log.Message($"[PortraitsEx] mood ==> Key {k.Key} Value {k.Value}");
+            //    Log.Message($"[PortraitsEx] refs.g_regex_cache ==> Key {k.Key} Value {k.Value}");
+            //}
+
+            //foreach (var k in impact_map)
+            //{
+            //    Log.Message($"[PortraitsEx] impact_map ==> Key {k.Key} Value {k.Value}");
             //}
 
 
@@ -288,52 +293,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             // filtered_group_filterに一旦重複してもいいので入れていく。
             var filtered_group_filter = FilterGroupMatches(refs.g_regex_cache, refs.group_filter, impact_map);
 
-            // 心情+社交などが一切ない。
             if (filtered_group_filter.Count() <= 0 && impact_map.Count() <= 0)
             {
                 return "";
             }
 
-
-            var matched_group = new Dictionary<string, List<string>>();
-
-            // filtered_group_filterをキー：値のものを、値：キーにしていく。
-            // 同時に重複した値を取り除いていく
-            foreach (var kvp in filtered_group_filter)
-            {
-                if (!matched_group.ContainsKey(kvp.Value))
-                {
-                    matched_group[kvp.Value] = new List<string>();
-                }
-                matched_group[kvp.Value].Add(kvp.Key);
-
-                //Log.Message($"[PortraitsEx] aaaa mood: {kvp.Value} {kvp.Key}");
-            }
-
-            var merged_keys = new Dictionary<string, string>();
-            // mood側を先に入れる（値はnull）
-            foreach (var kvp in impact_map)
-            {
-                //Log.Message($"[PortraitsEx] pic mood: {kvp.Key}");
-                merged_keys[kvp.Key] = null;
-            }
-
-            // group側を上書き（値を反映）
-            // これでmerged_keys=mood＋group(グループ名)という形になる。
-            foreach (var kvp in matched_group)
-            {
-                //Log.Message($"[PortraitsEx] pic group: {kvp.Key} relative mood ==> {kvp.Value}");
-                merged_keys[kvp.Key] = kvp.Key;
-            }
-
-            //foreach (var test in merged_keys)
+            //foreach (var test in filtered_group_filter)
             //{
-            //    Log.Message($"[PortraitsEx] bbb mood: {test.Key} {test.Value}");
+            //    Log.Message($"[PortraitsEx] filtered_group_filter: {test.Key} {test.Value}");
             //}
 
             // jsonのpriority_weightsの上から順にとmerged_keysのキーと突き合わせて行く。
             // priority_weightsと一致するもののみがmatched_priority_weightsに入る。
-            var matched_priority_weights = ExtractMatchedPriorityWeights(refs.priority_weight_order, refs.pw_regex_cache, refs.priority_weights, merged_keys);
+            var matched_priority_weights = ExtractMatchedPriorityWeights(refs.priority_weight_order, refs.priority_weights, filtered_group_filter);
 
             //int logc = 1;
             //foreach (var mpw in matched_priority_weights)
@@ -397,10 +369,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             is_resolved = false;
             no_match = false;
 
-
             //foreach (var k in refs.interrupt.group_filter)
             //{
-            //    Log.Message($"[PortraitsEx] refs.interrupt.group_filter ==> Key {k.Key} Value {k.Value}");
+            //    Log.Message($"[PortraitsEx] refs.interrupt.group_filter ==> Key {k.Key} Value {k.Value.key}");
             //}
 
             //foreach (var k in impact_map)
@@ -413,52 +384,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             // filtered_group_filterに一旦重複してもいいので入れていく。
             var filtered_group_filter = FilterGroupMatches(null, refs.interrupt.group_filter, impact_map);
 
-            // 心情+社交が一切ない(?)。
             if (filtered_group_filter.Count() <= 0 && impact_map.Count() <= 0)
             {
                 return "";
             }
 
-
-            var matched_group = new Dictionary<string, List<string>>();
-
-            // filtered_group_filterをキー：値のものを、値：キーにしていく。
-            // 同時に重複した値を取り除いていく
-            foreach (var kvp in filtered_group_filter)
-            {
-                if (!matched_group.ContainsKey(kvp.Value))
-                {
-                    matched_group[kvp.Value] = new List<string>();
-                }
-                matched_group[kvp.Value].Add(kvp.Key);
-
-                //Log.Message($"[PortraitsEx] aaaa mood: {kvp.Value} {kvp.Key}");
-            }
-
-            var merged_keys = new Dictionary<string, string>();
-            // mood側を先に入れる（値はnull）
-            foreach (var kvp in impact_map)
-            {
-                //Log.Message($"[PortraitsEx] pic mood: {kvp.Key}");
-                merged_keys[kvp.Key] = null;
-            }
-
-            // group側を上書き（値を反映）
-            // これでmerged_keys=mood＋group(グループ名)という形になる。
-            foreach (var kvp in matched_group)
-            {
-                //Log.Message($"[PortraitsEx] pic group: {kvp.Key} relative mood ==> {kvp.Value}");
-                merged_keys[kvp.Key] = kvp.Key;
-            }
-
-            //foreach (var test in merged_keys)
+            //foreach (var test in filtered_group_filter)
             //{
-            //    Log.Message($"[PortraitsEx] bbb mood: {test.Key} {test.Value}");
+            //    Log.Message($"[PortraitsEx] Interrupt filtered_group_filter: {test.Key} {test.Value}");
             //}
 
             // jsonのpriority_weightsの上から順にとmerged_keysのキーと突き合わせて行く。
             // priority_weightsと一致するもののみがmatched_priority_weightsに入る。
-            var matched_priority_weights = ExtractMatchedPriorityWeights(refs.interrupt.priority_weight_order, null, refs.interrupt.priority_weights, merged_keys);
+            var matched_priority_weights = ExtractMatchedPriorityWeights(refs.interrupt.priority_weight_order, refs.interrupt.priority_weights, filtered_group_filter);
 
             //int logc = 1;
             //foreach (var mpw in matched_priority_weights)
@@ -654,40 +592,52 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
         }
 
-        private static List<KeyValuePair<string, string>> FilterGroupMatches(
-            Dictionary<string, Regex> g_regex_cache,
-            Dictionary<string, string> group_filter,
-            Dictionary<string, float> mood)
+        private static Dictionary<string, string> FilterGroupMatches(
+            Dictionary<string, IPatternMatcher> g_regex_cache,
+            Dictionary<string, GroupPatternEntry> group_filter,
+            Dictionary<string, float> impact_map)
         {
-            List<KeyValuePair<string, string>> filtered_group_filter = new List<KeyValuePair<string, string>>();
+            Dictionary<string, string> filtered_group_filter = new Dictionary<string, string>();
             foreach (var kvp in group_filter)
             {
-                bool match_found = false;
-
-                if (g_regex_cache != null && g_regex_cache.ContainsKey(kvp.Key))
+                bool is_matched = false;
+                if (filtered_group_filter.ContainsKey(kvp.Value.key))
                 {
-                    var reg = g_regex_cache[kvp.Key];
-                    foreach (var mood_key in mood.Keys)
+                    // Groupは値:キーになってるので、同じキーがあったら後続の処理で上書きされるだけなので
+                    // 一致確認する必要なしなのでスキップ
+                    continue;
+                }
+                else if (g_regex_cache != null && g_regex_cache.TryGetValue(kvp.Key, out var matcher))
+                {
+                    foreach (var impact_map_key in impact_map.Keys)
                     {
-                        if (reg.IsMatch(mood_key))
+                        if (matcher.IsMatch(impact_map_key))
                         {
-                            match_found = true;
+                            filtered_group_filter[kvp.Value.key] = kvp.Value.key;
+                            is_matched = true;
                             break;
                         }
-                    }
-
-                    if (match_found)
-                    {
-                        filtered_group_filter.Add(kvp);
                     }
                 }
                 else
                 {
-                    if (mood.ContainsKey(kvp.Key)) match_found = true;
-
-                    if (match_found)
+                    if (impact_map.ContainsKey(kvp.Key)) 
                     {
-                        filtered_group_filter.Add(kvp);
+                        filtered_group_filter[kvp.Value.key] = kvp.Value.key;
+                        is_matched = true;
+                    }
+                }
+
+                if (is_matched)
+                {
+                    if (kvp.Value.alias_targets.Count > 0)
+                    {
+                        // alias_targetsにimpact_map_keyとマッチするものがあれば、そちらも追加する
+                        foreach (var alias in kvp.Value.alias_targets)
+                        {
+                            //Log.Message($"[PortraitsEx] alias_targets Key: {kvp.Value.key} Alias: {alias}");
+                            filtered_group_filter[alias] = alias;
+                        }
                     }
                 }
             }
@@ -697,54 +647,62 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         private static List<Dictionary<string, PriorityWeights>> ExtractMatchedPriorityWeights(
             List<string> priority_weight_order,
-            Dictionary<string, Regex> pw_regex_cache,
+            //Dictionary<string, Regex> pw_regex_cache,
             Dictionary<string, PriorityWeights> priority_weights,
             Dictionary<string, string> merged_keys)
         {
             var matched_priority_weights = new List<Dictionary<string, PriorityWeights>>();
             foreach (var kp in priority_weight_order)
             {
-                bool match_found = false;
+                //bool match_found = false;
 
                 var vp = priority_weights[kp];
                 Dictionary<string, PriorityWeights> dict = new Dictionary<string, PriorityWeights>();
-                if (pw_regex_cache != null && pw_regex_cache.ContainsKey(kp))
+                //if (pw_regex_cache != null && pw_regex_cache.ContainsKey(kp))
+                //{
+                //    var reg = pw_regex_cache[kp];
+                //    var lis = new List<string>();
+
+                //    foreach (var mk in merged_keys)
+                //    {
+                //        if (reg.IsMatch(mk.Key))
+                //        {
+                //            lis.Add(mk.Key);
+                //            match_found = true;
+                //            break;
+                //        }
+                //    }
+
+                //    if (match_found)
+                //    {
+                //        foreach (var elm in lis)
+                //        {
+                //            if (!dict.ContainsKey(elm))
+                //            {
+                //                dict.Add(elm, vp);
+                //            }
+                //        }
+                //    }
+                //}
+                //else
                 {
-                    var reg = pw_regex_cache[kp];
-                    var lis = new List<string>();
-
-                    foreach (var mk in merged_keys)
-                    {
-                        if (reg.IsMatch(mk.Key))
-                        {
-                            lis.Add(mk.Key);
-                            match_found = true;
-                            break;
-                        }
-                    }
-
-                    if (match_found)
-                    {
-                        foreach (var elm in lis)
-                        {
-                            if (!dict.ContainsKey(elm))
-                            {
-                                dict.Add(elm, vp);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (merged_keys.ContainsKey(kp)) match_found = true;
-
-                    if (match_found)
+                    if (merged_keys.ContainsKey(kp))
                     {
                         if (!dict.ContainsKey(kp))
                         {
                             dict.Add(kp, vp);
                         }
                     }
+                        
+                    //    match_found = true;
+
+                    //if (match_found)
+                    //{
+                    //    if (!dict.ContainsKey(kp))
+                    //    {
+                    //        dict.Add(kp, vp);
+                    //    }
+                    //}
                 }
 
                 matched_priority_weights.Add(dict);

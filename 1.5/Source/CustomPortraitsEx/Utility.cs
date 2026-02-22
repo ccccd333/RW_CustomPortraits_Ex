@@ -45,10 +45,16 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             return result;
         }
 
-            public static bool IsRegexPattern(string pattern)
+        public static bool IsRegexPattern(string pattern)
         {
             string regexSpecialChars = @"\.|\*|\+|\?|\[|\]|\(|\)|\{|\}|\||\\|\^|\$";
             return Regex.IsMatch(pattern, regexSpecialChars);
+        }
+
+        public static bool IsComplexRegexPattern(string pattern)
+        {
+            string complexRegexChars = @"(?<!\.)\.(?!\*)|\+|\?|\[|\]|\(|\)|\{|\}|\||\\|\^|\$";
+            return Regex.IsMatch(pattern, complexRegexChars);
         }
 
         /// <summary>

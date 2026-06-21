@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -142,34 +142,37 @@ namespace Foxy.CustomPortraits {
 
 		public void LoadIntoTexture(Texture2D tex) {
 			Texture2D temp = new Texture2D(Width, Height, Format, MipMapCount, false);
-			temp.LoadRawTextureData(DXT);
-			temp.Apply();
-
-			// DDS images are flipped which ends up being a lot of pain with DXT compression not supporting pixel operations.
-			// There is a bitwise flipping algorithm out there, but I couldn't find one stable enough to be less hassle than this.
-			// Texture format has to be changed since RenderTexture doesn't support DXT.
-			// And we need RenderTexture because Blit needs it. And I don't know how else to flip it but Blit.
+			RenderTexture flip = null;
 			RenderTexture prev = RenderTexture.active;
-			RenderTexture flip = new RenderTexture(temp.width, temp.height, 0, RenderTextureFormat.ARGB32);
-			RenderTexture.active = flip;
-			Graphics.Blit(temp, flip, new Vector2(1, -1), new Vector2(0, 1));
+			try {
+				temp.LoadRawTextureData(DXT);
+				temp.Apply();
 
-			tex.Resize(temp.width, temp.height, TextureFormat.ARGB32, false);
-			tex.ReadPixels(new Rect(0, 0, temp.width, temp.height), 0, 0);
-			tex.Apply();
-			RenderTexture.active = prev;
+				// DDS images are flipped which ends up being a lot of pain with DXT compression not supporting pixel operations.
+				// There is a bitwise flipping algorithm out there, but I couldn't find one stable enough to be less hassle than this.
+				// Texture format has to be changed since RenderTexture doesn't support DXT.
+				// And we need RenderTexture because Blit needs it. And I don't know how else to flip it but Blit.
+				flip = new RenderTexture(temp.width, temp.height, 0, RenderTextureFormat.ARGB32);
+				RenderTexture.active = flip;
+				Graphics.Blit(temp, flip, new Vector2(1, -1), new Vector2(0, 1));
 
-			// What's the point of using DDS if we convert it to RGB and lose memory/speed advantage of DXT?
-			// This will compress ARGB32 back into DXT5 using Unity's own stuff!
-			// And I'm fairly sure it will only do DXT5 and not DXT1 because there is an alpha channel in the flipped texture
-			// …and there's no non-alpha pixel format in GPU (which RenderTexture is), so we are stuck with ARGB32.
-			// There is RGB565, but it's supposedly old and bad.
-			// Maybe Unity is smart enough to notice how there are no transparent pixels and choose DXT1, I dunno.
-			// Not sure how much difference that makes either way.
-			tex.Compress(false);
+				tex.Resize(temp.width, temp.height, TextureFormat.ARGB32, false);
+				tex.ReadPixels(new Rect(0, 0, temp.width, temp.height), 0, 0);
+				tex.Apply();
 
-			UnityEngine.Object.Destroy(temp);
-			UnityEngine.Object.Destroy(flip);
+				// What's the point of using DDS if we convert it to RGB and lose memory/speed advantage of DXT?
+				// This will compress ARGB32 back into DXT5 using Unity's own stuff!
+				// And I'm fairly sure it will only do DXT5 and not DXT1 because there is an alpha channel in the flipped texture
+				// …and there's no non-alpha pixel format in GPU (which RenderTexture is), so we are stuck with ARGB32.
+				// There is RGB565, but it's supposedly old and bad.
+				// Maybe Unity is smart enough to notice how there are no transparent pixels and choose DXT1, I dunno.
+				// Not sure how much difference that makes either way.
+				tex.Compress(false);
+			} finally {
+				RenderTexture.active = prev;
+				UnityEngine.Object.Destroy(temp);
+				if (flip != null) UnityEngine.Object.Destroy(flip);
+			}
 		}
 	}
 }

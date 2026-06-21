@@ -1,4 +1,4 @@
-﻿using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
+using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
 using Foxy.CustomPortraits.CustomPortraitsEx.Repository.PatternMatching;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -72,10 +72,16 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
             List<string> error_message = new List<string>();
 
-            // TODO:やる気になったら、再読み込み時とjsonが読み取れない場合はテクスチャの削除をする
-            // メモリリークしたっていう人がいれば優先で対応
-            if (Refs.ContainsKey(preset_name))
+            if (Refs.TryGetValue(preset_name, out var oldRefs))
             {
+                // 再読み込み時は古いTexture2Dを解放してからRemoveする
+                foreach (var tx_pair in oldRefs.txs)
+                {
+                    foreach (var tex in tx_pair.Value.txs)
+                    {
+                        if (tex != null) UnityEngine.Object.Destroy(tex);
+                    }
+                }
                 Refs.Remove(preset_name);
             }
 
@@ -854,7 +860,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             else
                 Utility.FlipDXT5(dds.DXT, (int)dds.Width, (int)dds.Height);
             tex.LoadRawTextureData(dds.DXT);
-            tex.Apply();
+            tex.Apply(false, true);
 
             return tex;
         }

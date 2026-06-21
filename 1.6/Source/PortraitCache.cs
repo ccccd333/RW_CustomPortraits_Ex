@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -59,7 +59,9 @@ namespace Foxy.CustomPortraits {
 		}
 		public static void HardUpdate() {
 			Log.Message($"[Portraits] Hard update is removing {cache.Count} portrait.");
-			foreach (Texture2D tex in cache.Values) UnityEngine.Object.Destroy(tex);
+			foreach (Texture2D tex in cache.Values) {
+				if (tex != null) UnityEngine.Object.Destroy(tex);
+			}
 			cache.Clear();
 			Update();
 		}

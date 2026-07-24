@@ -14,13 +14,13 @@ namespace Foxy.CustomPortraits {
 
         public override void StartedNewGame()
         {
-            ConditionDrivenPortrait.Reset();
+            ConditionDrivenPortrait.ResetAll();
             Log.Message("[PortraitsEx] StartedNewGame.");
         }
 
         public override void LoadedGame()
         {
-            ConditionDrivenPortrait.Reset();
+            ConditionDrivenPortrait.ResetAll();
             Log.Message("[PortraitsEx] LoadedGame.");
         }
 

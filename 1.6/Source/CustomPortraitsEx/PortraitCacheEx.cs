@@ -1,5 +1,6 @@
 using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
 using Foxy.CustomPortraits.CustomPortraitsEx.Repository.PatternMatching;
+using Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperClass;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RimWorld;
@@ -28,6 +29,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         public static DirectoryInfo Directory { get; } = RimWorldRootDirectory.CreateSubdirectory("CustomPortraitsEx");
 
         public static DirectoryInfo PresetDirectory { get; } = Directory.CreateSubdirectory("Presets");
+        public static DirectoryInfo RepeatRulesDirectory { get; } = Directory.CreateSubdirectory("RepeatRules");
 
         public static PExSetting Settings = new PExSetting();
 
@@ -40,6 +42,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             Log.Message($"[PortraitsEx] Updating cache from directory: {Directory.FullName}");
             if (!Directory.Exists) Directory.Create();
             if (!PresetDirectory.Exists) PresetDirectory.Create();
+            if (!RepeatRulesDirectory.Exists) RepeatRulesDirectory.Create();
             try
             {
                 ReadDirectory(Directory);
@@ -82,6 +85,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         if (tex != null) UnityEngine.Object.Destroy(tex);
                     }
                 }
+                // videos は VideoEntry のみなので特別なリソース解放不要。
+                // VideoPlayerManager はグローバルシングルトンなので止めるだけ。
+                VideoPlayerManager.DestroyInstance();
+                oldRefs.videos.Clear();
                 Refs.Remove(preset_name);
             }
 
@@ -108,6 +115,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             {
                 JObject root = JObject.Parse(File.ReadAllText(@files[0].FullName));
                 Refs r = new Refs();
+                string repeat_rules_json_name = "";
+                bool preset_loaded_successfully = true;
                 // TODO:ここもリファクタリング必要・・・
                 foreach (var token in root["conditions"])
                 {
@@ -153,13 +162,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         {
                             Interrupt(preset_name, key, value, r);
                         }
+                        else if (key == "repeat_rules")
+                        {
+                            repeat_rules_json_name = GetRepeatRulesJsonName(value);
+                        }
                         else
                         {
+                            preset_loaded_successfully = false;
                             error_message.Add("The preset JSON definition is incorrect." + preset_name);
                         }
                     }
                     catch (Exception)
                     {
+                        preset_loaded_successfully = false;
                         //error_message.Add("The preset JSON definition is incorrect." + preset_name + " [wt?]: " + e.Message);
                     }
                 }
@@ -167,6 +182,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 if (!Refs.ContainsKey(preset_name))
                 {
                     Refs.Add(preset_name, r);
+                    if (preset_loaded_successfully && error_message.Count == 0 && !PresetErrorMap.ContainsKey(preset_name))
+                    {
+                        LoadRepeatRulesJson(preset_name, repeat_rules_json_name, r);
+                    }
                 }
                 else
                 {
@@ -211,6 +230,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 JObject root = JObject.Parse(File.ReadAllText(@file.FullName));
                 string preset_name = root["preset_name"].ToString();
                 Refs r = new Refs();
+                string repeat_rules_json_name = "";
+                bool preset_loaded_successfully = true;
                 // TODO:やる気になったら、再読み込み時とjsonが読み取れない場合はテクスチャの削除をする
                 // メモリリークしたっていう人がいれば優先で対応
                 foreach (var token in root["conditions"])
@@ -257,13 +278,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         {
                             Interrupt(preset_name, key, value, r);
                         }
+                        else if (key == "repeat_rules")
+                        {
+                            repeat_rules_json_name = GetRepeatRulesJsonName(value);
+                        }
                         else
                         {
+                            preset_loaded_successfully = false;
                             Log.Warning("The preset JSON definition is incorrect." + preset_name);
                         }
                     }
                     catch (Exception e)
                     {
+                        preset_loaded_successfully = false;
                         Log.Warning("The preset JSON definition is incorrect." + preset_name + " [wt?]: " + e.Message);
                     }
                 }
@@ -271,12 +298,218 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 if (!Refs.ContainsKey(preset_name))
                 {
                     Refs.Add(preset_name, r);
+                    if (preset_loaded_successfully && !PresetErrorMap.ContainsKey(preset_name))
+                    {
+                        LoadRepeatRulesJson(preset_name, repeat_rules_json_name, r);
+                    }
                 }
                 else
                 {
                     Log.Warning($"[PortraitsEx] Duplicate preset name detected. ==> Target preset: {preset_name}");
                 }
             }
+        }
+
+        private static string GetRepeatRulesJsonName(JToken value)
+        {
+            if (value is JValue repeat_rules_json_name)
+            {
+                return repeat_rules_json_name.Value<string>() ?? "";
+            }
+
+            return "";
+        }
+
+        private static void LoadRepeatRulesJson(string preset_name, string repeat_rules_json_name, Refs r)
+        {
+            if (repeat_rules_json_name.NullOrEmpty())
+            {
+                return;
+            }
+
+            string file_name = Path.GetFileName(repeat_rules_json_name);
+            if (Path.GetExtension(file_name).NullOrEmpty())
+            {
+                file_name += ".json";
+            }
+
+            string repeat_rules_json_path = Path.Combine(RepeatRulesDirectory.FullName, file_name);
+            if (!File.Exists(repeat_rules_json_path))
+            {
+                AddPresetLoadError(preset_name, $"RepeatRules JSON file not found: {file_name}");
+                return;
+            }
+
+            try
+            {
+                JObject root = JObject.Parse(File.ReadAllText(repeat_rules_json_path));
+                //JToken repeat_rules_root = root["repeat_rules"] ?? root;
+                LoadRepeatRulesRoot(root, r);
+                r.repeat_rules.is_enabled = true;
+                Log.Message($"[PortraitsEx] RepeatRules loaded ==> Target preset: {preset_name} File: {file_name}");
+            }
+            catch (Exception e)
+            {
+                AddPresetLoadError(preset_name, $"An error occurred while loading repeat_rules JSON: {file_name} {e.Message}");
+            }
+        }
+
+        private static void LoadRepeatRulesRoot(JToken repeat_rules_root, Refs r)
+        {
+            if (!(repeat_rules_root is JObject repeat_rules_object))
+            {
+                throw new Exception("RepeatRules JSON root must be an object.");
+            }
+
+            List<string> valid_context_names = new List<string>(r.txs.Keys);
+            ValidationContext validation_context = new ValidationContext(valid_context_names);
+
+            foreach (var context_token in repeat_rules_object)
+            {
+                string context_name = context_token.Key;
+                if (!(context_token.Value is JObject repeat_object))
+                {
+                    throw new Exception($"RepeatRules context must be an object: {context_name}");
+                }
+
+             
+                if (repeat_object.TryGetValue("loop", out JToken loop_token) && loop_token is JObject loop_object)
+                {
+                    RepeatLoopSettings repeat_loop_settings = new RepeatLoopSettings();
+
+                    if (loop_object.TryGetValue("min_count", out JToken min_count_token))
+                    {
+                        repeat_loop_settings.min_count = min_count_token.Value<int>();
+                    }
+
+                    if (loop_object.TryGetValue("max_count", out JToken max_count_token))
+                    {
+                        repeat_loop_settings.max_count = max_count_token.Value<int>();
+                    }
+
+                    if (loop_object.TryGetValue("interrupt_contexts", out JToken interrupt_contexts) && interrupt_contexts is JArray interrupt_array)
+                    {
+                        foreach (var interrupt_context in interrupt_array)
+                        {
+                            repeat_loop_settings.interrupt_contexts.Add(interrupt_context.ToString());
+                        }
+                    }
+
+                    r.repeat_rules.SetLoopSettings(context_name, repeat_loop_settings);
+                }
+
+                if (!repeat_object.TryGetValue("repeat_events", out JToken repeat_events_token) || !(repeat_events_token is JObject repeat_events_object))
+                {
+                    throw new Exception($"RepeatRules repeat_events must be an object: {context_name}");
+                }
+
+                foreach (var repeat_token in repeat_events_object)
+                {
+                    if (!int.TryParse(repeat_token.Key, out int repeat_index))
+                    {
+                        throw new Exception($"RepeatRules repeat index must be an integer: {context_name}.{repeat_token.Key}");
+                    }
+
+                    RepeatEvaluationGroup group = LoadRepeatEvaluationGroup(repeat_token.Value, validation_context);
+                    r.repeat_rules.SetOperations(context_name, repeat_index, group);
+                }
+            }
+        }
+
+        private static RepeatEvaluationGroup LoadRepeatEvaluationGroup(JToken group_token, ValidationContext validation_context)
+        {
+            RepeatEvaluationGroup group = new RepeatEvaluationGroup();
+            JToken operations_token = group_token;
+
+            if (group_token is JObject group_object)
+            {
+                //if (group_object.TryGetValue("repeat_range_min", out JToken repeat_range_min))
+                //{
+                //    group.repeat_range_min = repeat_range_min.Value<int>();
+                //}
+
+                //if (group_object.TryGetValue("repeat_range_max", out JToken repeat_range_max))
+                //{
+                //    group.repeat_range_max = repeat_range_max.Value<int>();
+                //}
+
+                //if (group_object.TryGetValue("repeat_range", out JToken repeat_range) && repeat_range is JArray range_array && range_array.Count >= 2)
+                //{
+                //    group.repeat_range_min = range_array[0].Value<int>();
+                //    group.repeat_range_max = range_array[1].Value<int>();
+                //}
+
+                if (group_object.TryGetValue("interrupt_contexts", out JToken interrupt_contexts) && interrupt_contexts is JArray interrupt_array)
+                {
+                    foreach (var interrupt_context in interrupt_array)
+                    {
+                        group.interrupt_contexts.Add(interrupt_context.ToString());
+                    }
+                }
+
+                if (group_object.TryGetValue("operations", out JToken operations))
+                {
+                    operations_token = operations;
+                }
+            }
+
+            if (!(operations_token is JArray operation_array))
+            {
+                throw new Exception("RepeatRules operations must be an array.");
+            }
+
+            foreach (var operation_token in operation_array)
+            {
+                OperationBase operation = CreateRepeatRulesOperation(operation_token, validation_context);
+                group.operation_list.Add(operation);
+            }
+
+            return group;
+        }
+
+        private static OperationBase CreateRepeatRulesOperation(JToken operation_token, ValidationContext validation_context)
+        {
+            if (!(operation_token is JObject operation_object))
+            {
+                throw new Exception("Variant operation must be an object.");
+            }
+
+            Operation operation = new Operation();
+
+            string operation_type = operation_object.Value<string>("operation_type") ?? "";
+            if (!Enum.TryParse(operation_type, out operation.operation_type))
+            {
+                throw new Exception($"Unknown repeat_rules operation_type: {operation_type}");
+            }
+
+            string inequality_sign = operation_object.Value<string>("inequality_sign") ?? "def";
+            if (!Enum.TryParse(inequality_sign, out operation.inequality_sign))
+            {
+                operation.inequality_sign = InequalitySign.unk;
+            }
+
+            operation.operation_base_value = operation_object.Value<string>("operation_base_value") ?? operation_object.Value<string>("value") ?? "";
+            operation.override_portrait_name = operation_object.Value<string>("override_portrait_name") ?? operation_object.Value<string>("result_context_name") ?? "";
+
+            OperationBase result;
+            switch (operation.operation_type)
+            {
+                case OperationType.portrait_context_name:
+                    result = new PortraitContextName();
+                    break;
+                case OperationType.rand_value:
+                    result = new RandValue();
+                    break;
+                default:
+                    throw new Exception($"Unsupported repeat_rules operation_type: {operation.operation_type}");
+            }
+
+            if (!result.Init(operation, validation_context))
+            {
+                throw new Exception($"Failed to initialize repeat_rules operation: {operation.operation_type}");
+            }
+
+            return result;
         }
 
         private static void Refts(string preset_name, string k, JToken n, Refs r)
@@ -304,14 +537,112 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         Log.Message($"[PortraitsEx] Texture Key ==> Target preset: {preset_name} ==> {Refs_key} ==> {cont}");
                         var tx = Textures(preset_name, Refs_key, cont, prop_n.Value, r);
                         r.txs.Add(Refs_key, tx);
-                        //if (Utility.IsRegexPattern(Refs_key))
-                        //{
-                        //    r.txs_regex_cache.Add(Refs_key, new Regex(Refs_key, RegexOptions.Compiled | RegexOptions.IgnoreCase));
-                        //}
+                    }
+                    else if (cont == "video")
+                    {
+                        // mp4 動画エントリを読み込む。
+                        // textures と並存可能。同一キーに両方あれば video を優先する（ConditionDrivenPortrait 側で制御）。
+                        Log.Message($"[PortraitsEx] Video Key ==> Target preset: {preset_name} ==> {Refs_key} ==> {cont}");
+                        var ve = LoadVideoEntry(preset_name, Refs_key, prop_n.Value);
+                        if (ve != null && !r.videos.ContainsKey(Refs_key))
+                            r.videos.Add(Refs_key, ve);
                     }
 
                 }
 
+            }
+        }
+
+        /// <summary>
+        /// JSON の video エントリをパースして VideoEntry を返す。
+        /// ファイルが見つからない場合は null を返す。
+        /// </summary>
+        private static VideoEntry LoadVideoEntry(string preset_name, string refs_key, JToken n)
+        {
+            VideoEntry ve = new VideoEntry();
+            try
+            {
+                foreach (var token in n)
+                {
+                    var prop = (JProperty)token;
+                    string conf = prop.Name;
+
+                    if (conf == "display_duration")
+                    {
+                        if (prop.Value is JValue disp)
+                            ve.display_duration = disp.Value<float>();
+                    }
+                    else if (conf == "loop")
+                    {
+                        if (prop.Value is JValue loopVal)
+                            ve.loop = loopVal.Value<bool>();
+                    }
+                    else if (conf == "files")
+                    {
+                        // VideoPlayer は 1 個だけなので先頭のエントリのみ使用。
+                        var arr = (JArray)prop.Value;
+                        if (arr.Count > 0)
+                            ve.file_path = arr[0].ToString();
+                    }
+                    else if (conf == "fallback_texture")
+                    {
+                        if (prop.Value is JValue fbVal)
+                            ve.fallback_texture_path = fbVal.Value<string>();
+                    }
+                }
+
+                if (ve.file_path == "")
+                {
+                    AddPresetLoadError(preset_name, $"[video] refs key '{refs_key}' has no 'files' defined.");
+                    return null;
+                }
+
+                // ファイル存在チェック
+                string abs_path = Directory.FullName + "/" + ve.file_path;
+                if (!System.IO.File.Exists(abs_path))
+                {
+                    AddPresetLoadError(preset_name, $"[video] File not found: {abs_path}");
+                    return null;
+                }
+
+                // フォールバックテクスチャのロード
+                if (!string.IsNullOrEmpty(ve.fallback_texture_path))
+                {
+                    string fb_path = Directory.FullName + "/" + ve.fallback_texture_path;
+                    if (System.IO.File.Exists(fb_path))
+                    {
+                        try
+                        {
+                            byte[] data = File.ReadAllBytes(fb_path);
+                            string ext = Path.GetExtension(fb_path).ToLower();
+                            if (ext == ".dds")
+                            {
+                                ve.fallback_texture = LoadTextureDDS(data);
+                            }
+                            else
+                            {
+                                ve.fallback_texture = new Texture2D(2, 2);
+                                ve.fallback_texture.LoadImage(data);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Warning($"[PortraitsEx] [video] Failed to load fallback_texture '{fb_path}': {e.Message}");
+                        }
+                    }
+                    else
+                    {
+                        Log.Warning($"[PortraitsEx] [video] fallback_texture not found: {fb_path}");
+                    }
+                }
+
+                Log.Message($"[PortraitsEx] Video Entry loaded ==> preset: {preset_name} key: {refs_key} path: {abs_path} loop: {ve.loop}");
+                return ve;
+            }
+            catch (Exception e)
+            {
+                AddPresetLoadError(preset_name, $"[video] Error loading video entry for '{refs_key}': {e.Message}");
+                return null;
             }
         }
 

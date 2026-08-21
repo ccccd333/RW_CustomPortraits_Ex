@@ -84,13 +84,13 @@
     <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\TabBase.cs" />
     <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\ThoughtBrowser.cs" />
     <Compile Include="CustomPortraitsEx\JsonEditorWindow\Tabs\WriteJsonErrorWindow.cs" />
-    <Compile Include="CustomPortraitsEx\PawnAffectionContext.cs" />
     <Compile Include="CustomPortraitsEx\PawnPortraitContext.cs" />
     <Compile Include="CustomPortraitsEx\PawnPortraitInterruptContext.cs" />
     <Compile Include="CustomPortraitsEx\PExSetting.cs" />
     <Compile Include="CustomPortraitsEx\PlayLogEntry_Interaction_ctor.cs" />
     <Compile Include="CustomPortraitsEx\PortraitCacheEx.cs" />
     <Compile Include="CustomPortraitsEx\PortraitContextKeys.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\CachedVideoPlayer.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Group.cs" />
     <Compile Include="CustomPortraitsEx\Repository\GroupPatternEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\InteractionFilter.cs" />
@@ -105,6 +105,8 @@
     <Compile Include="CustomPortraitsEx\Repository\PriorityWeights.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Refs.cs" />
     <Compile Include="CustomPortraitsEx\Repository\RepeatRules.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\LastContextAndRand.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\LastContextName.cs" />
     <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\OperationBase.cs" />
     <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\PortraitContextName.cs" />
     <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\RandValue.cs" />

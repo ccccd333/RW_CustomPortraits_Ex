@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Foxy.CustomPortraits.CustomPortraitsEx
 {
@@ -24,8 +24,22 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         public LogRetention recipient_log_retention { get; set; } = new LogRetention();
         public LogRetention initiator_log_retention { get; set; } = new LogRetention();
         public PortraitAnimationSettings portrait_animation { get; set; }
-
         public bool interrupt_fallback_to_steady { get; set; }
+
+        /// <summary>
+        /// VideoPlayer のプール上限数。0 の場合はキャッシュ無効。
+        /// </summary>
+        public int video_player_pool_limit { get; set; } = 0;
+
+        private float _video_audio_volume = 1.0f;
+        /// <summary>
+        /// 動画の音声ボリューム (0.0 = ミュート, 1.0 = 最大)。
+        /// </summary>
+        public float video_audio_volume 
+        { 
+            get => _video_audio_volume; 
+            set => _video_audio_volume = UnityEngine.Mathf.Clamp01(value); 
+        }
     }
 
     public class LogRetention

@@ -12,6 +12,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         public Dictionary<string, Textures> txs = new Dictionary<string, Textures>();
         /// <summary>mp4 動画エントリ。textures の代わりに video キーで JSON 定義されたもの。</summary>
         public Dictionary<string, VideoEntry> videos = new Dictionary<string, VideoEntry>();
+        /// <summary>生成済みの動画プレイヤーキャッシュ</summary>
+        public Dictionary<string, CachedVideoPlayer> cached_videos = new Dictionary<string, CachedVideoPlayer>();
         public Dictionary<string, GroupPatternEntry> group_filter = new Dictionary<string, GroupPatternEntry>();
         public Dictionary<string, PriorityWeights> priority_weights = new Dictionary<string, PriorityWeights>();
         public PortraitInterrupt interrupt = new PortraitInterrupt();

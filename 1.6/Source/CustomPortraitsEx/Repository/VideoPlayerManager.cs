@@ -55,13 +55,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
             _player = _go.AddComponent<VideoPlayer>();
             _player.playOnAwake = false;
             _player.renderMode  = VideoRenderMode.RenderTexture;
-            _player.audioOutputMode = VideoAudioOutputMode.None;
+            _player.audioOutputMode = VideoAudioOutputMode.Direct;
+            _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
             _player.sendFrameReadyEvents = true;
             _player.frameReady       += OnFrameReady;
             _player.loopPointReached += OnLoopPointReached;
             _player.errorReceived    += OnErrorReceived;
 
-            _rt = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGB32);
+            _rt = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
             _rt.Create();
             _player.targetTexture = _rt;
         }

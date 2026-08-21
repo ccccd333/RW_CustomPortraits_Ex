@@ -48,5 +48,25 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
         {
             return operation.override_portrait_name;
         }
+
+        public override int? ResolveOverrideMinCount()
+        {
+            return operation.override_min_count;
+        }
+
+        public override int? ResolveOverrideMaxCount()
+        {
+            return operation.override_max_count;
+        }
+
+        public override int? ResolveOverrideResetMaxCount()
+        {
+            return operation.override_reset_max_count;
+        }
+
+        public override bool JudgeInterruptContexts(string portrait_context_name)
+        {
+            return operation.interrupt_contexts.Contains(portrait_context_name);
+        }
     }
 }

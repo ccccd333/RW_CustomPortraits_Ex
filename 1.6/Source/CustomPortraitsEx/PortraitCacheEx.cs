@@ -88,6 +88,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 // videos は VideoEntry のみなので特別なリソース解放不要。
                 // VideoPlayerManager はグローバルシングルトンなので止めるだけ。
                 VideoPlayerManager.DestroyInstance();
+                // プールキャッシュも破棄
+                foreach (var cvp in oldRefs.cached_videos.Values)
+                {
+                    cvp.Cleanup();
+                }
+                oldRefs.cached_videos.Clear();
                 oldRefs.videos.Clear();
                 Refs.Remove(preset_name);
             }
@@ -185,6 +191,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     if (preset_loaded_successfully && error_message.Count == 0 && !PresetErrorMap.ContainsKey(preset_name))
                     {
                         LoadRepeatRulesJson(preset_name, repeat_rules_json_name, r);
+                        BuildVideoCache(preset_name, r);
                     }
                 }
                 else
@@ -219,6 +226,67 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
 
             PresetErrorMap[preset_name].Add(error_message);
+        }
+
+        /// <summary>
+        /// 各プリセットの動画キーを priority_weights 順 → videos 順で列挙し、
+        /// Setting.json の video_player_pool_limit をプリセット数で割った枚数分だけ
+        /// CachedVideoPlayer を生成して VideoPlayerPool に登録する。
+        /// 枚数に収まらない動画はシングルトン方式 (VideoPlayerManager) でフォールバック。
+        /// </summary>
+        private static void BuildVideoCache(string preset_name, Refs r)
+        {
+            int pool_limit = Settings.video_player_pool_limit;
+            if (pool_limit <= 0 || r.videos.Count == 0) return;
+
+            // ↓やめた、これだと最初のプリセットが動画を大量に持っていると、後続のプリセットが全くキャッシュされない。
+            //// プリセット数で割り切り捨て（最低 1）
+            //int presets_with_video = 0;
+            //foreach (var kv in Refs)
+            //{
+            //    if (kv.Value.videos.Count > 0) presets_with_video++;
+            //}
+            //// 現在処理中の preset はまだ Refs に入っているので考慮済み
+            //if (presets_with_video == 0) presets_with_video = 1;
+
+            //int slots_per_preset = System.Math.Max(1, pool_limit / presets_with_video);
+
+
+            // 優先順のリスト構築： priority_weights の動画キー → 残りの videos
+            var ordered = new System.Collections.Generic.List<string>();
+            foreach (var pw_key in r.priority_weight_order)
+            {
+                if (r.videos.ContainsKey(pw_key) && !ordered.Contains(pw_key))
+                    ordered.Add(pw_key);
+            }
+            foreach (var v_key in r.videos.Keys)
+            {
+                if (!ordered.Contains(v_key))
+                    ordered.Add(v_key);
+            }
+
+            int registered = 0;
+            foreach (var video_key in ordered)
+            {
+                if (registered >= pool_limit) break;
+
+                var ve = r.videos[video_key];
+                string abs_path = Directory.FullName + "/" + ve.file_path;
+
+                try
+                {
+                    var cvp = new CachedVideoPlayer(abs_path, ve.loop, ve.fallback_texture);
+                    r.cached_videos[video_key] = cvp;
+                    registered++;
+                    Log.Message($"[PortraitsEx] VideoCache registered: preset={preset_name} key={video_key} path={abs_path}");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error($"[PortraitsEx] VideoCache failed to create CachedVideoPlayer: preset={preset_name} key={video_key} ex={ex.Message}");
+                }
+            }
+
+            Log.Message($"[PortraitsEx] VideoCache: preset={preset_name} registered={registered}/{r.videos.Count} (pool_limit={pool_limit})");
         }
         private static void ReadDirectory(DirectoryInfo directory)
         {
@@ -301,6 +369,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     if (preset_loaded_successfully && !PresetErrorMap.ContainsKey(preset_name))
                     {
                         LoadRepeatRulesJson(preset_name, repeat_rules_json_name, r);
+                        BuildVideoCache(preset_name, r);
                     }
                 }
                 else
@@ -362,6 +431,16 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
 
             List<string> valid_context_names = new List<string>(r.txs.Keys);
+            foreach (var key in r.videos.Keys)
+            {
+                if (!valid_context_names.Contains(key))
+                    valid_context_names.Add(key);
+            }
+            foreach (var key in r.cached_videos.Keys)
+            {
+                if (!valid_context_names.Contains(key))
+                    valid_context_names.Add(key);
+            }
             ValidationContext validation_context = new ValidationContext(valid_context_names);
 
             foreach (var context_token in repeat_rules_object)
@@ -385,6 +464,15 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     if (loop_object.TryGetValue("max_count", out JToken max_count_token))
                     {
                         repeat_loop_settings.max_count = max_count_token.Value<int>();
+                    }
+
+                    if (loop_object.TryGetValue("reset_max_count", out JToken reset_max_count_token))
+                    {
+                        repeat_loop_settings.reset_max_count = reset_max_count_token.Value<int>();
+                        if (repeat_loop_settings.reset_max_count < 0)
+                        {
+                            throw new Exception("repeat_rules reset_max_count must be zero or greater.");
+                        }
                     }
 
                     if (loop_object.TryGetValue("interrupt_contexts", out JToken interrupt_contexts) && interrupt_contexts is JArray interrupt_array)
@@ -488,8 +576,46 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 operation.inequality_sign = InequalitySign.unk;
             }
 
-            operation.operation_base_value = operation_object.Value<string>("operation_base_value") ?? operation_object.Value<string>("value") ?? "";
+            // operation_base_value が JObject の場合は複合条件。ローカルで保持し InitWithObject に直接渡す（Operation には格納しない）
+            var base_value_token = operation_object["operation_base_value"] ?? operation_object["value"];
+            JObject base_value_as_object = base_value_token as JObject;
+            if (base_value_as_object == null)
+            {
+                operation.operation_base_value = base_value_token?.Value<string>() ?? "";
+            }
             operation.override_portrait_name = operation_object.Value<string>("override_portrait_name") ?? operation_object.Value<string>("result_context_name") ?? "";
+            if (operation_object.TryGetValue("override_min_count", out JToken override_min_count_token))
+            {
+                int override_min_count = override_min_count_token.Value<int>();
+                if (override_min_count < 0)
+                {
+                    throw new Exception("repeat_rules override_min_count must be zero or greater.");
+                }
+
+                operation.override_min_count = override_min_count;
+            }
+
+            if (operation_object.TryGetValue("override_max_count", out JToken override_max_count_token))
+            {
+                int override_max_count = override_max_count_token.Value<int>();
+                if (override_max_count < 0)
+                {
+                    throw new Exception("repeat_rules override_max_count must be zero or greater.");
+                }
+
+                operation.override_max_count = override_max_count;
+            }
+
+            if (operation_object.TryGetValue("override_reset_max_count", out JToken override_reset_max_count_token))
+            {
+                int override_reset_max_count = override_reset_max_count_token.Value<int>();
+                if (override_reset_max_count < 0)
+                {
+                    throw new Exception("repeat_rules override_reset_max_count must be zero or greater.");
+                }
+
+                operation.override_reset_max_count = override_reset_max_count;
+            }
 
             OperationBase result;
             switch (operation.operation_type)
@@ -500,11 +626,28 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 case OperationType.rand_value:
                     result = new RandValue();
                     break;
+                case OperationType.last_context_name:
+                    result = new LastContextName();
+                    break;
+                case OperationType.last_context_and_rand:
+                    result = new LastContextAndRand();
+                    break;
                 default:
                     throw new Exception($"Unsupported repeat_rules operation_type: {operation.operation_type}");
             }
 
-            if (!result.Init(operation, validation_context))
+            bool init_ok;
+            if (base_value_as_object != null)
+            {
+                // JObject は Init 後に不要なのでローカル変数のスコープ内のみで参照される
+                init_ok = result.InitWithObject(operation, base_value_as_object, validation_context);
+            }
+            else
+            {
+                init_ok = result.Init(operation, validation_context);
+            }
+
+            if (!init_ok)
             {
                 throw new Exception($"Failed to initialize repeat_rules operation: {operation.operation_type}");
             }

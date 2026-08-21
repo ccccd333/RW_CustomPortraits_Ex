@@ -6,7 +6,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
     public enum OperationType
     {
         portrait_context_name,
-        rand_value
+        rand_value,
+        last_context_name,
+        last_context_and_rand
     }
 
     public enum InequalitySign
@@ -106,6 +108,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
         public InequalitySign inequality_sign;
         public string operation_base_value;
         public string override_portrait_name;
+        public int? override_min_count;
+        public int? override_max_count;
+        public int? override_reset_max_count;
+        public List<string> interrupt_contexts = new List<string>();
     }
 
     public readonly struct ValidationContext
@@ -123,12 +129,18 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
     public readonly struct EvaluationArgs
     {
         public List<string> ActiveContexts { get; }
+        public string LastContextName { get; }
         public MultTypeValue Left { get; }
         public MultTypeValue Right { get; }
 
-        public EvaluationArgs(List<string> active_contexts = null, MultTypeValue left = null, MultTypeValue right = null)
+        public EvaluationArgs(
+            List<string> active_contexts = null,
+            string last_context_name = null,
+            MultTypeValue left = null,
+            MultTypeValue right = null)
         {
             ActiveContexts = active_contexts;
+            LastContextName = last_context_name;
             Left = left;
             Right = right;
         }
@@ -138,8 +150,21 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
     {
         public abstract bool Init(Operation op, ValidationContext vc);
 
+        public virtual bool InitWithObject(Operation op, Newtonsoft.Json.Linq.JObject base_object, ValidationContext vc)
+        {
+            return Init(op, vc);
+        }
+
         public abstract bool Evaluate(EvaluationArgs arg);
 
         public abstract string ResolveOverrideContext();
+
+        public abstract int? ResolveOverrideMinCount();
+
+        public abstract int? ResolveOverrideMaxCount();
+
+        public abstract int? ResolveOverrideResetMaxCount();
+
+        public abstract bool JudgeInterruptContexts(string portrait_context_name);
     }
 }

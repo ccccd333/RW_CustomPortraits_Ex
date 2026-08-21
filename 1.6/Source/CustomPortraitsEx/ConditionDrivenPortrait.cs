@@ -34,6 +34,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         private static bool temp_is_video = false;
         /// <summary>現在再生中のビデオがループかどうか（false = 1回再生後に次へ）。</summary>
         private static bool temp_video_loop = true;
+        /// <summary>現在アクティブなキャッシュ済み VideoPlayer。null の場合はシングルトン方式。</summary>
+        private static Repository.CachedVideoPlayer temp_cached_video_player = null;
+
+        /// <summary>現在いずれかの方法でビデオモードがアクティブかどうか</summary>
+        public static bool IsVideoActive => temp_is_video && (temp_cached_video_player != null ? temp_cached_video_player.is_playing : Repository.VideoPlayerManager.Instance.IsPlaying);
+
+        /// <summary>アクティブなビデオから現在のテクスチャを取得する</summary>
+        public static UnityEngine.Texture GetActiveVideoTexture()
+        {
+            if (temp_cached_video_player != null)
+                return temp_cached_video_player.GetTexture();
+            return Repository.VideoPlayerManager.Instance.GetTexture();
+        }
         // ----------------------------------------------------------------
 
         private static float last_update_time = Time.realtimeSinceStartup;
@@ -62,6 +75,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         private static volatile bool is_calculating = false;
         private static volatile string current_calculating_preset = null;
         private static volatile string repeat_base_context = null;
+        // repeat_rules の操作で指定された min_count。ベースコンテキストが変わるまで有効。
+        private static int? repeat_override_min_count = null;
+        // repeat_rules の操作で指定された max_count。ベースコンテキストが変わるまで有効。
+        private static int? repeat_override_max_count = null;
+        // repeat_rules の操作で指定された reset_max_count。ベースコンテキストが変わるまで有効。
+        private static int? repeat_override_reset_max_count = null;
 
         static ConditionDrivenPortrait()
         {
@@ -137,19 +156,41 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                 int loop_result = req.refs.repeat_rules.TryApplyLoopRepeatEvent(
                                     repeat_base_context,
                                     portrait_context_name,
+                                    pending_context_result,
                                     repeat_index,
                                     candidate_context_names,
-                                    out var loop_resolved_context_name);
+                                    repeat_override_min_count,
+                                    repeat_override_max_count,
+                                    repeat_override_reset_max_count,
+                                    out var loop_resolved_context_name,
+                                    out var applied_override_min_count,
+                                    out var applied_override_max_count,
+                                    out var applied_override_reset_max_count);
 
                                 if (loop_result == 1)
                                 {
                                     pending_context_result = loop_resolved_context_name;
+                                    if (applied_override_min_count.HasValue)
+                                    {
+                                        repeat_override_min_count = applied_override_min_count;
+                                    }
+                                    if (applied_override_max_count.HasValue)
+                                    {
+                                        repeat_override_max_count = applied_override_max_count;
+                                    }
+                                    if (applied_override_reset_max_count.HasValue)
+                                    {
+                                        repeat_override_reset_max_count = applied_override_reset_max_count;
+                                    }
                                     is_repeat = true;
                                     ++repeat_count;
                                 }
                                 else if (loop_result == -1)
                                 {
                                     repeat_count = 0;
+                                    repeat_override_min_count = null;
+                                    repeat_override_max_count = null;
+                                    repeat_override_reset_max_count = null;
                                 }
 
                                 //Log.Message($"[PortraitsEx] Async Worker Repeat Rules: preset_name {req.preset_name} repeat_base_context {repeat_base_context} repeat_count {repeat_count} loop_result {loop_result} is_repeat {is_repeat}");
@@ -169,16 +210,26 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                 if (!is_same_context)
                                 {
                                     repeat_count = 0;
+                                    repeat_override_min_count = null;
+                                    repeat_override_max_count = null;
+                                    repeat_override_reset_max_count = null;
                                 }
 
                                 int repeat_index = repeat_count;
-                                if (req.refs.repeat_rules.TryResolveVariantContext(
+                                int loop_result = req.refs.repeat_rules.TryResolveVariantContext(
                                     portrait_context_name,
                                     repeat_index,
                                     candidate_context_names,
                                     repeat_base_context,
+                                    pending_context_result,
                                     out var resolved_context_name,
-                                    out var should_increment_repeat))
+                                    out var should_increment_repeat,
+                                    out var applied_override_min_count,
+                                    out var applied_override_max_count,
+                                    out var applied_override_reset_max_count);
+
+
+                                if (loop_result == 1)
                                 {
                                     if (is_same_context)
                                     {
@@ -190,9 +241,22 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                         repeat_base_context = portrait_context_name;
                                     }
 
+                                    if (applied_override_min_count.HasValue)
+                                    {
+                                        repeat_override_min_count = applied_override_min_count;
+                                    }
+                                    if (applied_override_max_count.HasValue)
+                                    {
+                                        repeat_override_max_count = applied_override_max_count;
+                                    }
+                                    if (applied_override_reset_max_count.HasValue)
+                                    {
+                                        repeat_override_reset_max_count = applied_override_reset_max_count;
+                                    }
+
                                     portrait_context_name = resolved_context_name;
                                 }
-                                else
+                                else if(loop_result == -1)
                                 {
                                     if (!is_same_context)
                                     {
@@ -203,6 +267,13 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                     {
                                         repeat_count++;
                                     }
+                                }
+                                else
+                                {
+                                    // loop_result == 0 の場合は何もしない。
+                                    repeat_count = 1;
+                                    repeat_base_context = portrait_context_name;
+
                                 }
                             }
 
@@ -250,9 +321,18 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             // ビデオ状態もリセット
             temp_is_video = false;
             temp_video_loop = true;
+            temp_cached_video_player = null;
             // インスタンスが既に存在する場合のみ Stop()。
             // 未初期化状態で Instance にアクセスするとシーンロード中に new GameObject が走りクラッシュするため。
             Repository.VideoPlayerManager.StopIfActive();
+            // プールも止める
+            foreach (var r in PortraitCacheEx.Refs.Values)
+            {
+                foreach (var cvp in r.cached_videos.Values)
+                {
+                    cvp.Stop();
+                }
+            }
 
             // settings反映
             portrait_skip_on_lag = PortraitCacheEx.Settings.portrait_animation.portrait_skip_on_lag;
@@ -263,6 +343,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         {
             repeat_base_context = null;
             repeat_count = 0;
+            repeat_override_min_count = null;
+            repeat_override_max_count = null;
+            repeat_override_reset_max_count = null;
         }
 
         /// <summary>
@@ -395,7 +478,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                     // 動画で「ループしない」場合は、時間によるdisplay_durationの判定を無視して終端まで再生を続ける
                                     if (temp_is_video && !temp_video_loop)
                                     {
-                                        if (Repository.VideoPlayerManager.Instance.IsVideoEnded)
+                                        bool video_ended = temp_cached_video_player != null
+                                            ? temp_cached_video_player.is_video_ended
+                                            : Repository.VideoPlayerManager.Instance.IsVideoEnded;
+                                        if (video_ended)
                                         {
                                             should_keep_showing = false;
                                         }
@@ -727,7 +813,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 if (temp_is_video)
                 {
                     // ループなし動画が終端まで到達し、再評価の結果「同じコンテキスト」が選ばれた場合、最初から再生し直す
-                    if (!temp_video_loop && Repository.VideoPlayerManager.Instance.IsVideoEnded)
+                    if (!temp_video_loop && (temp_cached_video_player != null ? temp_cached_video_player.is_video_ended : Repository.VideoPlayerManager.Instance.IsVideoEnded))
                     {
                         //Log.Message($"[PortraitsEx] UpdatePortraitByContext: Replaying same video {temp_refs_key} preset_name {preset_name}");
                         return SwitchToVideoAndReturnFrame(refs.videos[temp_refs_key], preset_name, temp_refs_key, def);
@@ -754,12 +840,35 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         /// <summary>
         /// ビデオクリップへ切り替えて最初のフレームテクスチャを返す。
-        /// 戻り値は null（ビデオモード通知）。描画側は VideoPlayerManager.Instance.IsPlaying で判定。
+        /// 戻り値は null（ビデオモード通知）。描画側は IsPlaying で判定。
+        /// プールにキャッシュがあれば CachedVideoPlayer を使用し、なければシングルトンにフォールバック。
         /// </summary>
         private static Texture2D SwitchToVideoAndReturnFrame(Repository.VideoEntry ve, string preset_name, string access_key, Texture2D def)
         {
             string abs_path = PortraitCacheEx.Directory.FullName + "/" + ve.file_path;
-            Repository.VideoPlayerManager.Instance.SwitchClip(abs_path, ve.loop, ve.fallback_texture);
+
+            // プールキャッシュを優先使用
+            Repository.CachedVideoPlayer cached = null;
+            if (PortraitCacheEx.Refs.TryGetValue(preset_name, out var r) && r.cached_videos.TryGetValue(access_key, out var c))
+            {
+                cached = c;
+            }
+
+            if (cached != null)
+            {
+                cached.Play();
+                temp_cached_video_player = cached;
+                if (Settings.Instance.debug)
+                    Log.Message($"[PortraitsEx] SwitchToVideo (cached) ==> key: {access_key} path: {abs_path} loop: {ve.loop}");
+            }
+            else
+            {
+                // フォールバック: シングルトンに切り替え
+                Repository.VideoPlayerManager.Instance.SwitchClip(abs_path, ve.loop, ve.fallback_texture);
+                temp_cached_video_player = null;
+                if (Settings.Instance.debug)
+                    Log.Message($"[PortraitsEx] SwitchToVideo (singleton) ==> key: {access_key} path: {abs_path} loop: {ve.loop}");
+            }
 
             temp_is_video         = true;
             temp_video_loop       = ve.loop;
@@ -767,9 +876,6 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             temp_preset_name      = preset_name;
             temp_display_duration = ve.display_duration;
             disp_last_update_time = Time.realtimeSinceStartup;
-
-            if (Settings.Instance.debug)
-                Log.Message($"[PortraitsEx] SwitchToVideo ==> key: {access_key} path: {abs_path} loop: {ve.loop}");
 
             return null; // ビデオモード通知（描画側が VideoPlayerManager から RenderTexture を取得）
         }

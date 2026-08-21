@@ -1,0 +1,54 @@
+{
+  "Idle": {
+    "loop": {
+      "min_count": 1,
+      "max_count": 5,
+      "interrupt_contexts": ["CombatContext"]
+    },
+    "repeat_events": {
+      "0": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "Idle1t1" }] },
+      "1": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "Idle1t2" }], "interrupt_contexts": ["wet"] },
+      "2": { "operations": [{ "operation_type": "portrait_context_name", "operation_base_value": "wet kin", "override_portrait_name": "Idle1t2", "interrupt_contexts": ["wet"] }], "interrupt_contexts": ["wet"] }
+    }
+  },
+  "Chain": {
+    "loop": { "min_count": 1, "max_count": 2, "reset_max_count": 3 },
+    "repeat_events": {
+      "0": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "ChainEx1", "override_max_count": 3, "override_reset_max_count": 4 }] },
+      "1": { "operations": [{ "operation_type": "last_context_name", "operation_base_value": "ChainEx1", "override_portrait_name": "ChainEx2" }] },
+      "2": { "operations": [{ "operation_type": "last_context_name", "operation_base_value": "ChainEx2", "override_portrait_name": "ChainEx3" }] },
+      "3": { "operations": [{ "operation_type": "last_context_name", "operation_base_value": "ChainEx3", "override_portrait_name": "Chain" }] }
+    }
+  },
+  "Other": {
+    "loop": { "min_count": 1, "max_count": 1, "reset_max_count": 2 },
+    "repeat_events": {
+      "0": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "OtherEx" }] }
+    }
+  },
+  "Boundary": {
+    "loop": { "min_count": 1, "max_count": 1, "reset_max_count": 2 },
+    "repeat_events": {
+      "0": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "Boundary0" }] },
+      "1": { "operations": [{ "operation_type": "last_context_name", "operation_base_value": "Boundary0", "override_portrait_name": "Boundary1" }] },
+      "2": { "operations": [{ "operation_type": "last_context_name", "operation_base_value": "Boundary1", "override_portrait_name": "Boundary2" }] }
+    }
+  },
+  "MinCountOverride": {
+    "loop": { "min_count": 2, "max_count": 5 },
+    "repeat_events": {
+      "0": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "MinEx1", "override_min_count": 4 }] },
+      "1": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "MinEx2" }] },
+      "2": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "MinEx3" }] },
+      "3": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "MinEx4" }] }
+    }
+  },
+  "OpInterruptTest": {
+    "loop": { "min_count": 1, "max_count": 5 },
+    "repeat_events": {
+      "0": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "OpInt0" }] },
+      "1": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "OpInt1", "interrupt_contexts": ["Enemy"] }] },
+      "2": { "operations": [{ "operation_type": "rand_value", "operation_base_value": "100", "override_portrait_name": "OpInt2" }] }
+    }
+  }
+}

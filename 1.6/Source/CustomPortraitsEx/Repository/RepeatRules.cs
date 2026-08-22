@@ -234,7 +234,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
             // 範囲外では、現在選ばれたコンテキストが異なる場合にそちらへ戻す。
             if (IsBelowMinCount(loop_settings, repeat_index, override_min_count))
             {
-                return portrait_context_name == bef_context_name ? 1 : 0;
+                if (portrait_context_name != bef_context_name)
+                {
+                    return 0;
+                }
             }
 
             if (IsAboveMaxCount(loop_settings, repeat_index, override_max_count))

@@ -44,7 +44,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
             _player.loopPointReached += OnLoopPointReached;
             _player.errorReceived    += OnErrorReceived;
 
-            _rt = new RenderTexture(512, 512, 0, RenderTextureFormat.ARGB32);
+            _rt = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGB32);
             _rt.Create();
             _player.targetTexture = _rt;
 

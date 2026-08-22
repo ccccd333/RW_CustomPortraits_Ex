@@ -66,6 +66,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             public Dictionary<string, float> intr_impact_map;
             public bool steady_is_value_fetched;
             public Dictionary<string, float> steady_impact_map;
+            public string last_context_name;
         }
 
         private static System.Collections.Concurrent.ConcurrentQueue<AsyncRequest> request_queue = new System.Collections.Concurrent.ConcurrentQueue<AsyncRequest>();
@@ -156,7 +157,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                 int loop_result = req.refs.repeat_rules.TryApplyLoopRepeatEvent(
                                     repeat_base_context,
                                     portrait_context_name,
-                                    pending_context_result,
+                                    req.last_context_name,
                                     repeat_index,
                                     candidate_context_names,
                                     repeat_override_min_count,
@@ -221,7 +222,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                     repeat_index,
                                     candidate_context_names,
                                     repeat_base_context,
-                                    pending_context_result,
+                                    req.last_context_name,
                                     out var resolved_context_name,
                                     out var should_increment_repeat,
                                     out var applied_override_min_count,
@@ -532,7 +533,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                                     intr_is_value_fetched = intr_is_value_fetched,
                                     intr_impact_map = intr_impact_map,
                                     steady_is_value_fetched = steady_is_value_fetched,
-                                    steady_impact_map = steady_impact_map
+                                    steady_impact_map = steady_impact_map,
+                                    last_context_name = temp_refs_key
                                 });
                                 thread_event.Set();
 
@@ -845,6 +847,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         /// </summary>
         private static Texture2D SwitchToVideoAndReturnFrame(Repository.VideoEntry ve, string preset_name, string access_key, Texture2D def)
         {
+
             string abs_path = PortraitCacheEx.Directory.FullName + "/" + ve.file_path;
 
             // プールキャッシュを優先使用

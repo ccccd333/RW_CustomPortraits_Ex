@@ -45,22 +45,23 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             if (!RepeatRulesDirectory.Exists) RepeatRulesDirectory.Create();
             try
             {
+                string json = File.ReadAllText(Directory.FullName + "/" + Setting);
+                Settings = JsonConvert.DeserializeObject<PExSetting>(json);
+                //Log.Message($"[PortraitsEx] Setting.json loaded: video_render_texture_width={Settings.video_render_texture_width}, video_render_texture_height={Settings.video_render_texture_height}");
+            }
+            catch (Exception)
+            {
+                Log.Error($"[PortraitsEx] The Setting.json file could not be loaded. : {Directory.FullName + "/Setting.json"}");
+            }
+
+            try
+            {
                 ReadDirectory(Directory);
             }
             catch (Exception)
             {
                 Log.Warning("[PortraitsEx] Failed to load preset.");
                 return;
-            }
-
-            try
-            {
-                string json = File.ReadAllText(Directory.FullName + "/" + Setting);
-                Settings = JsonConvert.DeserializeObject<PExSetting>(json);
-            }
-            catch (Exception)
-            {
-                Log.Error($"[PortraitsEx] The Setting.json file could not be loaded. : {Directory.FullName + "/Setting.json"}");
             }
 
             if (Refs.Count > 0)

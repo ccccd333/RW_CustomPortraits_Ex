@@ -28,9 +28,9 @@ namespace Foxy.CustomPortraits {
                 tex = ConditionDrivenPortrait.GetPortraitTexture(pawn, filename, tex);
                 if (tex != null) {
                     PortraitDrawer.DrawNextToInspector(tex, pane.PaneTopY, tab);
-                } else if (CustomPortraitsEx.Repository.VideoPlayerManager.Instance.IsActive) {
+                } else if (ConditionDrivenPortrait.IsVideoActive) {
                     CustomPortraitsEx.Repository.VideoPortraitDrawer.DrawNextToInspector(
-                        CustomPortraitsEx.Repository.VideoPlayerManager.Instance.GetTexture(), pane.PaneTopY, tab);
+                        ConditionDrivenPortrait.GetActiveVideoTexture(), pane.PaneTopY, tab);
                 }
 			}
 			if (StaticSettings.IsTopRight) {

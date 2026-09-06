@@ -90,6 +90,7 @@
     <Compile Include="CustomPortraitsEx\PlayLogEntry_Interaction_ctor.cs" />
     <Compile Include="CustomPortraitsEx\PortraitCacheEx.cs" />
     <Compile Include="CustomPortraitsEx\PortraitContextKeys.cs" />
+    <Compile Include="CustomPortraitsEx\PortraitTimeManager.cs" />
     <Compile Include="CustomPortraitsEx\Repository\CachedVideoPlayer.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Group.cs" />
     <Compile Include="CustomPortraitsEx\Repository\GroupPatternEntry.cs" />

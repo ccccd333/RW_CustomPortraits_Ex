@@ -39,11 +39,28 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         private string _currentPath = "";
         private bool _isVideoEnded = false;
         private bool _hasFrame = false;
+        private bool _isStepMode = false;
 
-        public bool IsPlaying => _player != null && _player.isPlaying;
+        public bool IsPlaying => _player != null && (_player.isPlaying || _isStepMode);
         public bool IsActive => !string.IsNullOrEmpty(_currentPath);
+        public bool IsStepMode => _isStepMode;
 
-        public bool IsVideoEnded => _isVideoEnded;
+        public bool IsVideoEnded
+        {
+            get
+            {
+                if (_isVideoEnded) return true;
+                if (_player == null || _player.isLooping || !_hasFrame) return false;
+                // ステップモードでは isPlaying が常に false なのでフレーム位置で判定
+                if (!_player.isPlaying || _isStepMode)
+                {
+                    // Unityイベント(loopPointReached)がラグ等で不発した場合のフォールバック
+                    if (_player.frameCount > 0 && (ulong)_player.frame >= _player.frameCount - 2) return true;
+                    if (_player.length > 0 && _player.time >= _player.length - 0.1) return true;
+                }
+                return false;
+            }
+        }
 
         private Texture2D _fallbackTexture;
 
@@ -84,23 +101,76 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
 
         public void SwitchClip(string absolutePath, bool loop, Texture2D fallbackTexture = null)
         {
-            if (_currentPath == absolutePath && IsActive && _player != null && _player.isPlaying)
+            if (_currentPath == absolutePath && IsActive && _player != null && _player.isPlaying && !_isStepMode)
                 return;
 
             _isVideoEnded    = false;
             _hasFrame        = false;
+            _isStepMode      = false;
             _currentPath     = absolutePath;
             _fallbackTexture = fallbackTexture;
 
             _player.Stop();
             _player.url       = "file:///" + absolutePath.Replace("\\", "/");
             _player.isLooping = loop;
+            _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
             _player.Play();
+        }
+
+        /// <summary>ステップモードでクリップ切り替え。音声ミュート、Pause状態で待機。</summary>
+        public void SwitchClipStepMode(string absolutePath, bool loop, Texture2D fallbackTexture = null)
+        {
+            _isVideoEnded    = false;
+            _hasFrame        = false;
+            _isStepMode      = true;
+            _currentPath     = absolutePath;
+            _fallbackTexture = fallbackTexture;
+
+            _player.Stop();
+            _player.url       = "file:///" + absolutePath.Replace("\\", "/");
+            _player.isLooping = loop;
+            _player.SetDirectAudioVolume(0, 0f);
+            _player.Play();
+            _player.Pause();
+        }
+
+        /// <summary>再生中にステップモードへ動的に移行する。フレーム位置は維持。</summary>
+        public void SwitchToStepMode()
+        {
+            _isStepMode = true;
+            if (_player != null && _player.isPlaying)
+                _player.Pause();
+            if (_player != null)
+                _player.SetDirectAudioVolume(0, 0f);
+        }
+
+        /// <summary>ステップモード中に1フレーム進める。毎フレーム呼ぶ。</summary>
+        public void StepForward()
+        {
+            if (_player != null && _isStepMode && !_isVideoEnded)
+            {
+                _player.StepForward();
+                if (PortraitCacheEx.Settings.double_step_forward)
+                {
+                    _player.StepForward();
+                }
+            }
+        }
+
+        public void SwitchToPlayMode()
+        {
+            _isStepMode = false;
+
+            if (_player != null && !_isVideoEnded)
+            {
+                _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
+                _player.Play();
+            }
         }
 
         public Texture GetTexture()
         {
-            if (_player != null && _player.isPlaying && _hasFrame)
+            if (_player != null && (_player.isPlaying || (_isStepMode && !_isVideoEnded)) && _hasFrame)
                 return _rt;
             
             if (_fallbackTexture != null)
@@ -116,6 +186,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
             _currentPath     = "";
             _isVideoEnded    = false;
             _hasFrame        = false;
+            _isStepMode      = false;
             _fallbackTexture = null;
         }
 

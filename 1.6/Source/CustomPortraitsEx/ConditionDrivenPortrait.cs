@@ -43,15 +43,33 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         /// <summary>アクティブなビデオから現在のテクスチャを取得する</summary>
         public static UnityEngine.Texture GetActiveVideoTexture()
         {
+            TickVideoStepForward();
+
             if (temp_cached_video_player != null)
                 return temp_cached_video_player.GetTexture();
             return Repository.VideoPlayerManager.Instance.GetTexture();
         }
         // ----------------------------------------------------------------
 
-        private static float last_update_time = Time.realtimeSinceStartup;
-        private static float frame_interval_seconds = 0.1f;
-        private static bool portrait_skip_on_lag = true;
+        // ---- FPS計測 & ステップモード ------------------------------------
+        /// <summary>現在のビデオがステップモードで再生中か</summary>
+        private static bool temp_video_step_mode = false;
+
+        private static int _last_step_frame = -1;
+
+        /// <summary>ビデオがステップモード中なら1フレーム進める。描画側から毎フレーム呼ぶ。</summary>
+        public static void TickVideoStepForward()
+        {
+            if (!temp_is_video || !temp_video_step_mode) return;
+            if (_last_step_frame == Time.frameCount) return;
+            _last_step_frame = Time.frameCount;
+
+            if (temp_cached_video_player != null)
+                temp_cached_video_player.StepForward();
+            else
+                Repository.VideoPlayerManager.Instance.StepForward();
+        }
+        // ----------------------------------------------------------------
 
         private static float disp_last_update_time = Time.realtimeSinceStartup;
 
@@ -257,7 +275,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
                                     portrait_context_name = resolved_context_name;
                                 }
-                                else if(loop_result == -1)
+                                else if (loop_result == -1)
                                 {
                                     if (!is_same_context)
                                     {
@@ -315,7 +333,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             temp_animation_mode = false;
             temp_preset_name = "";
             temp_display_duration = PortraitCacheEx.Settings.display_duration;
-            last_update_time = Time.realtimeSinceStartup;
+            PortraitTimeManager.ResetAllTimers();
             disp_last_update_time = Time.realtimeSinceStartup;
             is_interrupt_active = false;
 
@@ -334,10 +352,6 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     cvp.Stop();
                 }
             }
-
-            // settings反映
-            portrait_skip_on_lag = PortraitCacheEx.Settings.portrait_animation.portrait_skip_on_lag;
-            frame_interval_seconds = PortraitCacheEx.Settings.portrait_animation.frame_interval_seconds;
         }
 
         public static void ResetRepeatState()
@@ -360,6 +374,27 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         public static Texture2D GetPortraitTexture(Pawn pawn, string filename, Texture2D def)
         {
+            if (Current.ProgramState != ProgramState.Playing || Scribe.mode != LoadSaveMode.Inactive)
+            {
+                return def;
+            }
+
+            PortraitTimeManager.UpdateFpsMeasurement(temp_is_video, temp_video_step_mode, () =>
+            {
+                temp_video_step_mode = true;
+                if (temp_cached_video_player != null)
+                    temp_cached_video_player.SwitchToStepMode();
+                else
+                    Repository.VideoPlayerManager.Instance.SwitchToStepMode();
+            }, () =>
+            {
+                temp_video_step_mode = false;
+                if (temp_cached_video_player != null)
+                    temp_cached_video_player.SwitchToPlayMode();
+                else
+                    Repository.VideoPlayerManager.Instance.SwitchToPlayMode();
+            });
+
             //Log.Message($"[PortraitsEx] Try Visible Portrait: test 1");
             if (filename != null && filename != "" && PortraitCacheEx.IsAvailable)
             {
@@ -373,41 +408,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                     return def;
                 }
                 //Log.Message($"[PortraitsEx] Try Visible Portrait: test 3");
-                bool next_portrait = false;
                 int skip_count = 1;
-                // ゲーム内時間だとFPSに依存してしまうのでUnityの内部タイマーでフレーム計算する
-                float current_time = Time.realtimeSinceStartup;
-                //Log.Message($"[PortraitsEx] Try Visible Portrait: test 4");
-                if (current_time - last_update_time >= frame_interval_seconds)
-                {
-                    // TODO:ここはアニメーション機能前提に組んでいるのでちょっと変だけど。その内直すかも
-
-                    // 大体0.1sだと60FPSで4か6フレーム目くらいで次の画像表示する
-                    next_portrait = true;
-
-                    if (portrait_skip_on_lag)
-                    {
-                        // コロニー終盤だとFPSが低下するので、それ用に表示画像のスキップ機能を追加
-
-                        // 現在の時刻と前フレームの時刻を計算して、frame_interval_secondsに
-                        // 収まらない場合はその分スキップする。
-                        float delta = current_time - last_update_time;
-                        skip_count = Mathf.FloorToInt(delta / frame_interval_seconds);
-                        // ここでcurrent_timeを入れると余り分が消失してしまう
-                        // スキップタイミングはframe_interval_secondsの1倍の時は1枚画像送りでいいが
-                        // 2倍の場合は0.21や0.22と0.0Xとなる。この余りも次インターバルに含めるため。
-                        last_update_time += skip_count * frame_interval_seconds;
-                        //if (skip_count > 1)
-                        //{
-                        //    Log.Message($"[PortraitsEx] Skip Cound {skip_count} current_time {current_time} last_update_time {last_update_time}");
-                        //}
-                    }
-                    else
-                    {
-                        last_update_time = current_time;
-
-                    }
-                }
+                float frame_interval_seconds = PortraitCacheEx.Settings.portrait_animation.frame_interval_seconds;
+                bool portrait_skip_on_lag = PortraitCacheEx.Settings.portrait_animation.portrait_skip_on_lag;
+                bool next_portrait = PortraitTimeManager.CheckAnimationInterval(frame_interval_seconds, portrait_skip_on_lag, out skip_count);
                 var mood_refs = PortraitCacheEx.Refs;
                 //Log.Message($"[PortraitsEx] Try Visible Portrait: test 5");
                 if (mood_refs.ContainsKey(preset_name) && !PortraitCacheEx.PresetErrorMap.ContainsKey(preset_name))
@@ -443,13 +447,6 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         //        Log.Message($"[PortraitsEx] ConditionDrivenPortrait.GetPortraitTexture {pendingContextResult}");
                         //}
 
-                        bool intr_is_value_fetched = false;
-                        Dictionary<string, float> intr_impact_map = new Dictionary<string, float>();
-                        if (refs.interrupt.interrupt_enabled)
-                        {
-                            intr_impact_map = PawnPortraitInterruptContext.ComposeImpactMap(pawn, refs.interrupt, is_interrupt_active, out intr_is_value_fetched);
-                        }
-
                         bool isHandlingAsync = (is_calculating || pending_context_result != null) && current_calculating_preset == preset_name;
                         if (isHandlingAsync)
                         {
@@ -466,6 +463,13 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                         }
                         else
                         {
+                            bool intr_is_value_fetched = false;
+                            Dictionary<string, float> intr_impact_map = new Dictionary<string, float>();
+                            if (refs.interrupt.interrupt_enabled)
+                            {
+                                intr_impact_map = PawnPortraitInterruptContext.ComposeImpactMap(pawn, refs.interrupt, is_interrupt_active, out intr_is_value_fetched);
+                            }
+
                             if (!is_interrupt_active && intr_is_value_fetched)
                             {
                                 is_interrupt_active = true;
@@ -474,7 +478,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                             {
                                 if (temp_preset_name == preset_name)
                                 {
-                                    bool should_keep_showing = (current_time - disp_last_update_time <= temp_display_duration);
+                                    bool should_keep_showing = (Time.realtimeSinceStartup - disp_last_update_time <= temp_display_duration);
 
                                     // 動画で「ループしない」場合は、時間によるdisplay_durationの判定を無視して終端まで再生を続ける
                                     if (temp_is_video && !temp_video_loop)
@@ -859,24 +863,33 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
             if (cached != null)
             {
-                cached.Play();
+                if (PortraitTimeManager.LowFpsDetected)
+                    cached.PrepareStepMode();
+                else
+                    cached.Play();
+
                 temp_cached_video_player = cached;
                 if (Settings.Instance.debug)
-                    Log.Message($"[PortraitsEx] SwitchToVideo (cached) ==> key: {access_key} path: {abs_path} loop: {ve.loop}");
+                    Log.Message($"[PortraitsEx] SwitchToVideo (cached) ==> key: {access_key} path: {abs_path} loop: {ve.loop} step_mode: {PortraitTimeManager.LowFpsDetected}");
             }
             else
             {
                 // フォールバック: シングルトンに切り替え
-                Repository.VideoPlayerManager.Instance.SwitchClip(abs_path, ve.loop, ve.fallback_texture);
+                if (PortraitTimeManager.LowFpsDetected)
+                    Repository.VideoPlayerManager.Instance.SwitchClipStepMode(abs_path, ve.loop, ve.fallback_texture);
+                else
+                    Repository.VideoPlayerManager.Instance.SwitchClip(abs_path, ve.loop, ve.fallback_texture);
+
                 temp_cached_video_player = null;
                 if (Settings.Instance.debug)
-                    Log.Message($"[PortraitsEx] SwitchToVideo (singleton) ==> key: {access_key} path: {abs_path} loop: {ve.loop}");
+                    Log.Message($"[PortraitsEx] SwitchToVideo (singleton) ==> key: {access_key} path: {abs_path} loop: {ve.loop} step_mode: {PortraitTimeManager.LowFpsDetected}");
             }
 
-            temp_is_video         = true;
-            temp_video_loop       = ve.loop;
-            temp_refs_key         = access_key;
-            temp_preset_name      = preset_name;
+            temp_is_video = true;
+            temp_video_loop = ve.loop;
+            temp_video_step_mode = PortraitTimeManager.LowFpsDetected;
+            temp_refs_key = access_key;
+            temp_preset_name = preset_name;
             temp_display_duration = ve.display_duration;
             disp_last_update_time = Time.realtimeSinceStartup;
 

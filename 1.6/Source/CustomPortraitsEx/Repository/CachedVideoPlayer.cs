@@ -21,9 +21,26 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         private bool _is_video_ended = false;
         private bool _loop = true;
         private Texture2D _fallback_texture;
+        private bool _is_step_mode = false;
 
-        public bool is_playing => _player != null && _player.isPlaying;
-        public bool is_video_ended => _is_video_ended;
+        public bool is_playing => _player != null && (_player.isPlaying || _is_step_mode);
+        public bool is_step_mode => _is_step_mode;
+        public bool is_video_ended
+        {
+            get
+            {
+                if (_is_video_ended) return true;
+                if (_player == null || _loop || !_has_frame) return false;
+                // ステップモードでは isPlaying が常に false なのでフレーム位置で判定
+                if (!_player.isPlaying || _is_step_mode)
+                {
+                    // Unityイベント(loopPointReached)がラグ等で不発した場合のフォールバック
+                    if (_player.frameCount > 0 && (ulong)_player.frame >= _player.frameCount - 2) return true;
+                    if (_player.length > 0 && _player.time >= _player.length - 0.1) return true;
+                }
+                return false;
+            }
+        }
 
         public CachedVideoPlayer(string absolute_path, bool loop, Texture2D fallback_texture)
         {
@@ -57,34 +74,97 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         private void OnLoopPointReached(VideoPlayer vp)          => _is_video_ended = true;
         private void OnErrorReceived(VideoPlayer vp, string msg) => Log.Error($"[PortraitsEx] CachedVideoPlayer error ({absolute_path}): {msg}");
 
-        /// <summary>再生開始。2回目以降は先頭シークして再スタート。</summary>
+        /// <summary>通常再生開始。2回目以降は先頭シークして再スタート。ステップモードも解除。</summary>
         public void Play()
         {
             _is_video_ended = false;
             _has_frame      = false;
+            _is_step_mode   = false;
 
             if (_player.isPlaying)
                 _player.Stop();
 
             _player.frame     = 0;
             _player.isLooping = _loop;
+            _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
             _player.Play();
+        }
+
+        /// <summary>ステップモードで再生準備。音声ミュート、Pause状態で待機。</summary>
+        public void PrepareStepMode()
+        {
+            _is_video_ended = false;
+            _has_frame      = false;
+            _is_step_mode   = true;
+
+            if (_player.isPlaying)
+                _player.Stop();
+
+            _player.frame     = 0;
+            _player.isLooping = _loop;
+            _player.SetDirectAudioVolume(0, 0f);
+            _player.Play();
+            _player.Pause();
+        }
+
+        /// <summary>再生中にステップモードへ動的に移行する。フレーム位置は維持。</summary>
+        public void SwitchToStepMode()
+        {
+            _is_step_mode = true;
+            if (_player != null && _player.isPlaying)
+                _player.Pause();
+            if (_player != null)
+                _player.SetDirectAudioVolume(0, 0f);
+        }
+
+        /// <summary>ステップモード中に1フレーム進める。毎フレーム呼ぶ。</summary>
+        public void StepForward()
+        {
+//            Log.Message(
+//    $"[Video] StepForward called. " +
+//    $"stepMode={_is_step_mode}, " +
+//    $"ended={_is_video_ended}, " +
+//    $"isPlaying={_player?.isPlaying}, " +
+//    $"frame={_player?.frame}, " +
+//    $"frameCount={_player?.frameCount}"
+//);
+            //Log.Message($"[CustomPortraitsEx] StepForward called. is_step_mode={_is_step_mode}, is_video_ended={_is_video_ended}");
+            if (_player != null && _is_step_mode && !_is_video_ended)
+            {
+                _player.StepForward();
+                if (PortraitCacheEx.Settings.double_step_forward)
+                {
+                    _player.StepForward();
+                }
+            }
+        }
+
+        public void SwitchToPlayMode()
+        {
+            _is_step_mode = false;
+
+            if (_player != null && !_is_video_ended)
+            {
+                _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
+                _player.Play();
+            }
         }
 
         /// <summary>停止（ポーン切り替え時など）。</summary>
         public void Stop()
         {
-            if (_player != null && _player.isPlaying)
+            if (_player != null && (_player.isPlaying || _is_step_mode))
                 _player.Stop();
             _has_frame      = false;
             _is_video_ended = false;
+            _is_step_mode   = false;
         }
 
         public void ResetEndedFlag() => _is_video_ended = false;
 
         public Texture GetTexture()
         {
-            if (_player != null && _player.isPlaying && _has_frame)
+            if (_player != null && (_player.isPlaying || (_is_step_mode&& !_is_video_ended)) && _has_frame)
                 return _rt;
             if (_fallback_texture != null)
                 return _fallback_texture;

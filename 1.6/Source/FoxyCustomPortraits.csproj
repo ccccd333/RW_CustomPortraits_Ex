@@ -132,6 +132,7 @@
     <Compile Include="Patch_DrawHediffListing.cs" />
     <Compile Include="Patch_ExtraOnGUI.cs" />
     <Compile Include="Patch_DrawCharacterCard.cs" />
+    <Compile Include="Patch_GameLifecycle.cs" />
     <Compile Include="Patch_InfoCard.cs" />
     <Compile Include="Patch_Mod_OwlsColonistBar.cs" />
     <Compile Include="Patch_Mod_ColorCodedMoodBar.cs" />

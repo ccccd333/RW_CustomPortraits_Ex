@@ -31,7 +31,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         public static DirectoryInfo PresetDirectory { get; } = Directory.CreateSubdirectory("Presets");
         public static DirectoryInfo RepeatRulesDirectory { get; } = Directory.CreateSubdirectory("RepeatRules");
 
-        public static PExSetting Settings = new PExSetting();
+        private static PExSetting _settings = new PExSetting();
+        public static PExSetting Settings
+        {
+            get => _settings ?? (_settings = new PExSetting());
+            set => _settings = value ?? new PExSetting();
+        }
 
         public static bool IsAvailable = false;
 

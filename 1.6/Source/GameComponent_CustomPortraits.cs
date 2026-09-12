@@ -1,4 +1,5 @@
-﻿using Foxy.CustomPortraits.CustomPortraitsEx;
+using CustomPortraits;
+using Foxy.CustomPortraits.CustomPortraitsEx;
 using System.Collections.Generic;
 using Verse;
 
@@ -14,14 +15,10 @@ namespace Foxy.CustomPortraits {
 
         public override void StartedNewGame()
         {
-            ConditionDrivenPortrait.ResetAll();
-            Log.Message("[PortraitsEx] StartedNewGame.");
         }
 
         public override void LoadedGame()
         {
-            ConditionDrivenPortrait.ResetAll();
-            Log.Message("[PortraitsEx] LoadedGame.");
         }
 
         public override void ExposeData() {

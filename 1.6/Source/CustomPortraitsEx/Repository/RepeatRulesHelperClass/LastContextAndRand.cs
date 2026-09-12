@@ -1,3 +1,5 @@
+using System;
+using System.Threading;
 using Verse;
 
 namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperClass
@@ -9,6 +11,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
     /// </summary>
     public class LastContextAndRand : OperationBase
     {
+        private static readonly ThreadLocal<Random> rand = new ThreadLocal<Random>(() => new Random(Guid.NewGuid().GetHashCode()));
         private Operation operation;
         private string last_context_name_value;
         private int rand_threshold;
@@ -75,7 +78,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
             bool last_ctx_match = arg.LastContextName == last_context_name_value;
             if (!last_ctx_match) return false;
 
-            int random_value = UnityEngine.Random.Range(0, 100);
+            int random_value = rand.Value.Next(0, 100);
             return random_value < rand_threshold;
         }
 

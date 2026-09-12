@@ -153,6 +153,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         /// <summary>停止（ポーン切り替え時など）。</summary>
         public void Stop()
         {
+            if (!Verse.UnityData.IsInMainThread)
+            {
+                Verse.LongEventHandler.ExecuteWhenFinished(() => Stop());
+                return;
+            }
+
             if (_player != null && (_player.isPlaying || _is_step_mode))
                 _player.Stop();
             _has_frame      = false;

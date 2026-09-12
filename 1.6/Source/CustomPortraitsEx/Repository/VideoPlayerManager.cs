@@ -181,6 +181,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
 
         public void Stop()
         {
+            if (!Verse.UnityData.IsInMainThread)
+            {
+                Verse.LongEventHandler.ExecuteWhenFinished(() => Stop());
+                return;
+            }
+
             if (_player != null && IsPlaying)
                 _player.Stop();
             _currentPath     = "";

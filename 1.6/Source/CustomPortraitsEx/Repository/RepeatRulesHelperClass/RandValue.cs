@@ -1,10 +1,13 @@
 
+using System;
+using System.Threading;
 using Verse;
 
 namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperClass
 {
     public class RandValue : OperationBase
     {
+        private static readonly ThreadLocal<Random> rand = new ThreadLocal<Random>(() => new Random(Guid.NewGuid().GetHashCode()));
         Operation operation;
         int parsed_value;
 
@@ -40,7 +43,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.RepeatRulesHelperCla
 
         public override bool Evaluate(EvaluationArgs arg)
         {
-            int random_value = UnityEngine.Random.Range(0, 100);
+            int random_value = rand.Value.Next(0, 100);
             return random_value < parsed_value;
         }
 

@@ -101,6 +101,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         // repeat_rules の操作で指定された reset_max_count。ベースコンテキストが変わるまで有効。
         private static int? repeat_override_reset_max_count = null;
 
+        private static readonly ThreadLocal<System.Random> rand = new ThreadLocal<System.Random>(() => new System.Random(Guid.NewGuid().GetHashCode()));
+
         static ConditionDrivenPortrait()
         {
             worker_thread = new Thread(WorkerLoop);
@@ -341,16 +343,34 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             temp_is_video = false;
             temp_video_loop = true;
             temp_cached_video_player = null;
-            // インスタンスが既に存在する場合のみ Stop()。
-            // 未初期化状態で Instance にアクセスするとシーンロード中に new GameObject が走りクラッシュするため。
-            Repository.VideoPlayerManager.StopIfActive();
-            // プールも止める
-            foreach (var r in PortraitCacheEx.Refs.Values)
+
+            if (UnityData.IsInMainThread)
             {
-                foreach (var cvp in r.cached_videos.Values)
+                // インスタンスが既に存在する場合のみ Stop()。
+                // 未初期化状態で Instance にアクセスするとシーンロード中に new GameObject が走りクラッシュするため。
+                Repository.VideoPlayerManager.StopIfActive();
+                // プールも止める
+                foreach (var r in PortraitCacheEx.Refs.Values)
                 {
-                    cvp.Stop();
+                    foreach (var cvp in r.cached_videos.Values)
+                    {
+                        cvp.Stop();
+                    }
                 }
+            }
+            else
+            {
+                LongEventHandler.ExecuteWhenFinished(() =>
+                {
+                    Repository.VideoPlayerManager.StopIfActive();
+                    foreach (var r in PortraitCacheEx.Refs.Values)
+                    {
+                        foreach (var cvp in r.cached_videos.Values)
+                        {
+                            cvp.Stop();
+                        }
+                    }
+                });
             }
         }
 
@@ -622,7 +642,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 foreach (var kvp in elm)
                 {
                     int weight = kvp.Value.weight;
-                    int seed = UnityEngine.Random.Range(0, 100);
+                    int seed = rand.Value.Next(0, 100);
                     //Log.Message($"[PortraitsEx] name: {kvp.Value.filter_name} seed: {seed} weight: {weight}");
                     if (seed < weight)
                     {
@@ -720,7 +740,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 foreach (var kvp in elm)
                 {
                     int weight = kvp.Value.weight;
-                    int seed = UnityEngine.Random.Range(0, 100);
+                    int seed = rand.Value.Next(0, 100);
                     //Log.Message($"[PortraitsEx] name: {kvp.Value.filter_name} seed: {seed} weight: {weight}");
                     if (seed < weight)
                     {

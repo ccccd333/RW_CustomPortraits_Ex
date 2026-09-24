@@ -56,6 +56,16 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         public int video_fps_history_size { get; set; } = 10;
 
         public bool double_step_forward { get; set; } = true;
+
+        /// <summary>
+        /// 動画のストール（フレーム停止）と判定する連続描画フレーム数
+        /// </summary>
+        public int video_stall_trigger_count { get; set; } = 10;
+
+        /// <summary>
+        /// 動画のストール（フレーム停止）と判定する経過秒数
+        /// </summary>
+        public float video_stall_trigger_seconds { get; set; } = 0.5f;
     }
 
     public class LogRetention

@@ -22,8 +22,29 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         public static bool LowFpsDetected => _low_fps_detected;
 
+        /// <summary>
+        /// 動画ストール検知時などに外部からステップモード状態へ強制設定する。
+        /// </summary>
+        public static void ForceStepMode()
+        {
+            _low_fps_detected = true;
+            _high_fps_count = 0;
+        }
+
         // ---- アニメーションスキップ用 ----
         private static float _last_update_time = Time.realtimeSinceStartup;
+
+        // ---- 動画ストール検知用 ----
+        private static long _last_video_frame = -1;
+        private static float _last_video_frame_advance_time = 0f;
+        private static int _stalled_render_frames = 0;
+
+        public static void ResetVideoStallTimer()
+        {
+            _last_video_frame = -1;
+            _last_video_frame_advance_time = Time.realtimeSinceStartup;
+            _stalled_render_frames = 0;
+        }
 
         public static void ResetAllTimers()
         {
@@ -34,6 +55,50 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             _high_fps_count = 0;
             _fps_history.Clear();
             //_high_fps_detected = false;
+            ResetVideoStallTimer();
+        }
+
+        /// <summary>
+        /// 動画のフレーム停止（ストール）を検知する。
+        /// 10フレーム以上かつ実時間で0.5秒以上フレームが進んでいない場合にストールと判定し、
+        /// ステップモード状態へ強制設定した上で true を返す。
+        /// </summary>
+        public static bool CheckVideoStall(bool isVideoPlaying, bool hasFrame, bool isVideoEnded, long currentFrame)
+        {
+            if (!isVideoPlaying || !hasFrame || isVideoEnded || currentFrame < 0)
+                return false;
+
+            float now = Time.realtimeSinceStartup;
+
+            if (currentFrame != _last_video_frame)
+            {
+                // フレームが正常に進んでいる
+                _last_video_frame = currentFrame;
+                _last_video_frame_advance_time = now;
+                _stalled_render_frames = 0;
+                return false;
+            }
+
+            // フレームが前回から動いていない
+            _stalled_render_frames++;
+
+            // 描画フレームが設定値以上経過し、実時間でも設定秒数以上停止している場合
+            if (_stalled_render_frames >= PortraitCacheEx.Settings.video_stall_trigger_count &&
+                (now - _last_video_frame_advance_time) >= PortraitCacheEx.Settings.video_stall_trigger_seconds)
+            {
+                if (Settings.Instance.debug)
+                {
+                    Log.Message($"[PortraitsEx] Video stall detected at frame {currentFrame} (stalled {_stalled_render_frames} frames, {now - _last_video_frame_advance_time:F2}s). Switching to step mode...");
+                }
+
+                ForceStepMode();
+
+                _last_video_frame_advance_time = now;
+                _stalled_render_frames = 0;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

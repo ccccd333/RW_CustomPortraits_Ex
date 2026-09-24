@@ -23,6 +23,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         private Texture2D _fallback_texture;
         private bool _is_step_mode = false;
 
+        public bool HasFrame => _has_frame;
+        public long CurrentFrame => _player != null ? _player.frame : -1;
+
         public bool is_playing => _player != null && (_player.isPlaying || _is_step_mode);
         public bool is_step_mode => _is_step_mode;
         public bool is_video_ended

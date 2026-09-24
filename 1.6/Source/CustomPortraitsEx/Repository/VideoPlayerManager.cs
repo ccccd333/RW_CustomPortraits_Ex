@@ -41,6 +41,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         private bool _hasFrame = false;
         private bool _isStepMode = false;
 
+        public bool HasFrame => _hasFrame;
+        public long CurrentFrame => _player != null ? _player.frame : -1;
+
         public bool IsPlaying => _player != null && (_player.isPlaying || _isStepMode);
         public bool IsActive => !string.IsNullOrEmpty(_currentPath);
         public bool IsStepMode => _isStepMode;

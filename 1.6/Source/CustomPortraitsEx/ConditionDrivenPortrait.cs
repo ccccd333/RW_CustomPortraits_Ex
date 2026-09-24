@@ -69,6 +69,26 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             else
                 Repository.VideoPlayerManager.Instance.StepForward();
         }
+
+        /// <summary>現在再生中のビデオをステップモードへ移行する。</summary>
+        private static void SwitchToStepMode()
+        {
+            temp_video_step_mode = true;
+            if (temp_cached_video_player != null)
+                temp_cached_video_player.SwitchToStepMode();
+            else
+                Repository.VideoPlayerManager.Instance.SwitchToStepMode();
+        }
+
+        /// <summary>現在再生中のビデオを通常再生（PlayMode）へ復帰させる。</summary>
+        private static void SwitchToPlayMode()
+        {
+            temp_video_step_mode = false;
+            if (temp_cached_video_player != null)
+                temp_cached_video_player.SwitchToPlayMode();
+            else
+                Repository.VideoPlayerManager.Instance.SwitchToPlayMode();
+        }
         // ----------------------------------------------------------------
 
         private static float disp_last_update_time = Time.realtimeSinceStartup;
@@ -399,21 +419,21 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 return def;
             }
 
-            PortraitTimeManager.UpdateFpsMeasurement(temp_is_video, temp_video_step_mode, () =>
+            PortraitTimeManager.UpdateFpsMeasurement(temp_is_video, temp_video_step_mode, SwitchToStepMode, SwitchToPlayMode);
+
+            // 動画再生中のストール（フレーム停止）検知とステップモード移行による自動復旧
+            // UpdateFpsMeasurement の直後に実行することで、設定やFPS計測による即時上書きを防ぐ
+            if (temp_is_video)
             {
-                temp_video_step_mode = true;
-                if (temp_cached_video_player != null)
-                    temp_cached_video_player.SwitchToStepMode();
-                else
-                    Repository.VideoPlayerManager.Instance.SwitchToStepMode();
-            }, () =>
-            {
-                temp_video_step_mode = false;
-                if (temp_cached_video_player != null)
-                    temp_cached_video_player.SwitchToPlayMode();
-                else
-                    Repository.VideoPlayerManager.Instance.SwitchToPlayMode();
-            });
+                bool hasFrame = temp_cached_video_player != null ? temp_cached_video_player.HasFrame : Repository.VideoPlayerManager.Instance.HasFrame;
+                bool isVideoEnded = temp_cached_video_player != null ? temp_cached_video_player.is_video_ended : Repository.VideoPlayerManager.Instance.IsVideoEnded;
+                long currentFrame = temp_cached_video_player != null ? temp_cached_video_player.CurrentFrame : Repository.VideoPlayerManager.Instance.CurrentFrame;
+
+                if (PortraitTimeManager.CheckVideoStall(temp_is_video, hasFrame, isVideoEnded, currentFrame))
+                {
+                    SwitchToStepMode();
+                }
+            }
 
             //Log.Message($"[PortraitsEx] Try Visible Portrait: test 1");
             if (filename != null && filename != "" && PortraitCacheEx.IsAvailable)
@@ -912,6 +932,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             temp_preset_name = preset_name;
             temp_display_duration = ve.display_duration;
             disp_last_update_time = Time.realtimeSinceStartup;
+            PortraitTimeManager.ResetVideoStallTimer();
 
             return null; // ビデオモード通知（描画側が VideoPlayerManager から RenderTexture を取得）
         }

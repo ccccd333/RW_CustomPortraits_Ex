@@ -1,0 +1,111 @@
+<機能説明>
+主にパチンコのように確率分岐や、直前に選択されたもの次第で次これを表示してみたいなことができるようにするものです。
+ver 1.3.5時点では
+Idle状態で次は50％でこの画像を、50％でほかのこの画像を表示するや、
+Idle状態でこのポートレートコンテキスト名（「Idle」、「雨が降ってずぶぬれ」など）が取得されていた場合この画像を表示するといった風にできます。
+
+
+①ディレクトリ構成
+
+...\Steam\steamapps\common\RimWorld\
+	CustomPortraitsEx\
+		〇〇\~\1.dds
+		template\
+			folder_list.txt
+			フォルダー作成.py
+		Preset\
+			〇〇.json
+		RepeatRules\
+			〇〇RepeatSetting.json
+			
+②リンク付け
+
+〇〇.json側のconditions以下にリピート設定するjsonを紐づけてください。json名だけでいいです。
+
+{
+  "preset_name": "〇〇",
+  "conditions": {
+    "repeat_rules": "〇〇RepeatSetting.json",
+    "fallback_mood": "Idle",
+    "fallback_mood_on_death": "Dead",
+    "refs": {
+      "CombatContext": {
+        "video": {
+          "loop": false,
+          "fallback_texture": "〇〇/CombatContext/1.dds",
+          "files": [
+            "〇〇/CombatContext/combat.mp4"
+          ]
+        }
+      },
+      "Idle": {
+        "video": {
+          "loop": false,
+          "fallback_texture": "〇〇/Idle/1.dds",
+          "files": [
+            "〇〇/Idle/input.mp4"
+          ]
+        }
+      },
+      "Idle1t1": {←こちらにリピート時の上書き用設定も定義しておく
+        "video": {
+          "loop": false,
+          "fallback_texture": "〇〇/Idle/1.dds",
+          "files": [
+            "〇〇/Idle1t1/input.mp4"
+          ]
+        }
+      },
+      "Idle1t2": {←こちらにリピート時の上書き用設定も定義しておく
+        "video": {
+          "loop": false,
+          "fallback_texture": "〇〇/Idle/1.dds",
+          "files": [
+            "〇〇/Idle1t2/input.mp4"
+          ]
+        }
+      }
+～～省略～～
+
+〇〇RepeatSetting.jsonは以下のように定義できます。
+{
+  "Idle": {←リピートする基点、今回だとIdleポートレートが選択されたとき以下のルールでIdleを指定回数繰り返し、その間repeat_eventの内容でポートレートの上書きを行う
+    "loop": {←ループ設定
+      "min_count": 1,←min~maxの間は絶対Idleのポートレートコンテキストの画像or動画再生を行う
+      "max_count": 5,
+      "interrupt_contexts": [←min~max中にここに定義されたポートレートコンテキストが来た場合Idleから抜けるための設定
+        "CombatContext"
+      ]
+    },
+    "repeat_events": {←主にパチンコ演出みたいな感じができる定義箇所
+      "0": {←リピート回数(最初)
+        "operations": [
+          {
+            "operation_type": "rand_value",←ランダム値による選出
+            "operation_base_value": "100",←これだと100%これが選ばれる、50とかにすると50%
+            "override_portrait_name": "Idle1t1"←Idleの画像をIdle1t1に定義された画像に切り替えてねという指定
+          }
+        ]
+      },
+      "1": {←リピート回数(N回目、今回だと1回目)
+        "operations": [
+          {
+            "operation_type": "portrait_context_name",←ポートレートコンテキストによる選出
+            "operation_base_value": "雨が降ってずぶぬれ",←groupによるフィルター後「雨が降ってずぶぬれ」があればこの状態が選ばれる
+            "override_portrait_name": "Idle1t2"←Idleの画像をIdle1t2に定義された画像に切り替えてねという指定
+          }
+        ]
+      }
+    }
+  }
+}
+
+ver 1.3.5時点では
+operation_typeは
+・rand_value(operation_base_valueに定義されたランダム値以上)
+ 0~100の値で、50とかけば大体50%で選ばれるという意味
+ 
+・portrait_context_name(operation_base_valueと一致するポートレートコンテキストがあるか)
+ operation_base_valueには〇〇.jsonのgroupのキーの個所を定義してください。
+ どのポートレートに切り替えるかは〇〇.json側（プリセット）に定義されたpriority_weightの確率によるものなのですが、
+ その計算の際に、ポーンの状態を〇〇.jsonのgroupにフィルタリングします。それを評価してoperation_base_valueと一致した場合、ここが選出されるというもの。

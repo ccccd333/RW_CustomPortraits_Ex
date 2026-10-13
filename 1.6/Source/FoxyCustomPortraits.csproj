@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,33 +36,33 @@
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Newtonsoft.Json">
       <HintPath>packages\Unity.Newtonsoft.Json.7.0.0.0\lib\net35-Client\Unity.Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="UnityEngine.VideoModule">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -90,32 +91,32 @@
     <Compile Include="CustomPortraitsEx\PlayLogEntry_Interaction_ctor.cs" />
     <Compile Include="CustomPortraitsEx\PortraitCacheEx.cs" />
     <Compile Include="CustomPortraitsEx\PortraitContextKeys.cs" />
-    <Compile Include="CustomPortraitsEx\PortraitTimeManager.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\CachedVideoPlayer.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\RepeatRules.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Group.cs" />
     <Compile Include="CustomPortraitsEx\Repository\GroupPatternEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\InteractionFilter.cs" />
     <Compile Include="CustomPortraitsEx\Repository\InteractionSelectionMap.cs" />
     <Compile Include="CustomPortraitsEx\Repository\MonitorBehaviors.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\IPatternMatcher.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PatternMatching\PatternMatcherFactory.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\RegexPattern.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\SimpleWildcardPattern.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\PawnCacheEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PortraitInterrupt.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PawnCacheEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\PriorityWeights.cs" />
     <Compile Include="CustomPortraitsEx\Repository\Refs.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\RepeatRules.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\LastContextAndRand.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\LastContextName.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\IPatternMatcher.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\RegexPattern.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\PatternMatching\SimpleWildcardPattern.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\Sounds.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\Textures.cs" />
     <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\OperationBase.cs" />
     <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\PortraitContextName.cs" />
     <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\RandValue.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\Sounds.cs" />
-    <Compile Include="CustomPortraitsEx\Repository\Textures.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\LastContextName.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\RepeatRulesHelperClass\LastContextAndRand.cs" />
+    <Compile Include="CustomPortraitsEx\Repository\CachedVideoPlayer.cs" />
     <Compile Include="CustomPortraitsEx\Repository\VideoEntry.cs" />
     <Compile Include="CustomPortraitsEx\Repository\VideoPlayerManager.cs" />
     <Compile Include="CustomPortraitsEx\Repository\VideoPortraitDrawer.cs" />
+    <Compile Include="CustomPortraitsEx\PortraitTimeManager.cs" />
     <Compile Include="CustomPortraitsEx\Utility.cs" />
     <Compile Include="DDS.cs" />
     <Compile Include="Dialog_AdvancedPortraitPawn.cs" />
@@ -131,8 +132,8 @@
     <Compile Include="Patch_DrawGizmoGrid.cs" />
     <Compile Include="Patch_DrawHediffListing.cs" />
     <Compile Include="Patch_ExtraOnGUI.cs" />
-    <Compile Include="Patch_DrawCharacterCard.cs" />
     <Compile Include="Patch_GameLifecycle.cs" />
+    <Compile Include="Patch_DrawCharacterCard.cs" />
     <Compile Include="Patch_InfoCard.cs" />
     <Compile Include="Patch_Mod_OwlsColonistBar.cs" />
     <Compile Include="Patch_Mod_ColorCodedMoodBar.cs" />
@@ -147,6 +148,10 @@
     <Compile Include="Settings.Old.cs" />
     <Compile Include="Static.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Unity.Newtonsoft.Json.dll" />
+  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="CustomPortraitsEx\Interrupt\~InterruptContextResolver.cs here" />
     <None Include="CustomPortraitsEx\Steady\~ContextResolver.cs here" />

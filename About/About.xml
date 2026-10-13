@@ -7,6 +7,7 @@
     <li>1.4</li>
     <li>1.5</li>
     <li>1.6</li>
+    <li>1.7</li>
   </supportedVersions>
   <packageId>Foxy.CustomPortraits</packageId>
   <url>https://github.com/Tea-Cup/RW_CustomPortraits</url>
@@ -17,7 +18,7 @@ This mod does not generate images, only displays them.
 Portraits can be set in "Health" tab of a pawn.
 Images are loaded from "CustomPortraits" folder in RimWorld root directory.
 Something like: .../steamapps/common/RimWorld/CustomPortraits
-.jpg, .jpeg, .png images are supported.
+.jpg, .jpeg, .png and .dds (DXT1, DXT5) images are supported.
 ]]></description>
 
   <modIconPath IgnoreIfNoMatchingField="True">FoxyCustomPortraits_ModIcon</modIconPath>

@@ -109,4 +109,6 @@
 
   <Foxy.CustomPortraits.Dev.Label>Files debug:</Foxy.CustomPortraits.Dev.Label>
   <Foxy.CustomPortraits.Dev.Tooltip>Print found image filenames to the console.</Foxy.CustomPortraits.Dev.Tooltip>
+
+  <Foxy.CustomPortraits.AdvancedPortrait>Advanced mode</Foxy.CustomPortraits.AdvancedPortrait>
 </LanguageData>

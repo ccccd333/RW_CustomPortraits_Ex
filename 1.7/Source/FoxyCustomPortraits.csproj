@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Foxy.CustomPortraits</RootNamespace>
+    <AssemblyName>Foxy.CustomPortraits</AssemblyName>
+    <OutputPath>..\Assemblies\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <!-- RimWorld 1.7 Instance & Workshop Paths -->
+  <PropertyGroup>
+    <RimWorldInstanceDir>C:\Users\sanos\AppData\Local\RimSort\instances\Hina 174977rev926\RimWorld</RimWorldInstanceDir>
+    <HarmonyModDir>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\1.7\Assemblies</HarmonyModDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Core Assemblies -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldInstanceDir)\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityStubs">
+      <HintPath>$(RimWorldInstanceDir)\UnityStubs.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(HarmonyModDir)\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- JSON Package -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <!-- Exclude old subprojects / tests from root compile -->
+  <ItemGroup>
+    <Compile Remove="FoxyCustomPortraits.Tests\**" />
+    <None Remove="FoxyCustomPortraits.Tests\**" />
+  </ItemGroup>
+</Project>

@@ -27,13 +27,35 @@
 画像はpngもしくはdds(DTX1)でお願いします。
 サイズは最大横320、縦512です。
 
-これは1からインクリメントして、2.dds、3.ddsと作ってください。
-1.dds以外必要な人はおそらく、アニメーション用で使われる方です。
+アニメーションの用途の方は
+1からインクリメントして、2.dds、3.ddsと作ってください。
+※ver 1.3.5以降※－－－－－－－－－－－－－－－－－－－－－－－－－－－－
+mp4をサポートしております。
+ここに記載方法を載せておきます。
+loopがfalseの場合
+      "Downed": {
+        "video": {←ここをtexturesではなくvideoに
+          "loop": false,←ループ設定です。mp4の終端まで再生した際に先頭からループし直すかの設定です。
+          "fallback_texture": "〇〇/Downed/1.dds",←動画の再生ができるようになるまでの背景画像です
+          "files": [
+            "〇〇/Downed/down.mp4"←mp4動画をCustomPortraitsEx配下から指定してください
+          ]
+        }
+      },
+loopがtrueの場合
+      "Downed": {
+        "video": {
+          "loop": true,
+          "display_duration":6.0 ←動画をループするのはいいけど、何秒の間ループするの？という設定です。
+          "fallback_texture": "〇〇/Downed/1.dds",
+          "files": [
+            "〇〇/Downed/down.mp4"
+          ]
+        }
+      },
+ －－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－
 一応pngもサポートしています。1.pngとしてください。
 ただし、pngでアニメーション用はサポートしてないです。サイズがでかすぎるためRAM、VRAMに優しくないので今後も対応しないと思います。
-
-後、既知のバグと申し送り.txtに書いた通りddsは上下反転したものを使ってください。
-==>※ver1.1 testでゲーム内で上下反転を行いました。反転作業は必要ないです。※
 
 アニメーション用のdds画像を作りたい方はgithub、同梱の「Cine2DDSTool」を使ってください。
 使い方はCine2DDSTool\readme.txtをご確認ください。
@@ -55,14 +77,29 @@ recipient_log_retention.seconds
 initiator_log_retention.seconds→この秒数でキャッシュを削除するためのものです。これはポーンが最初のインタラクトを発生したさせた時刻からのものとなります。
 ただし、再度同じInteractionDefのlabel(ここは翻訳済みのラベルです。日本語なら世間話、英語ならChitchat)＋ポーンのフルネームだと時刻が更新されます。
 
+// ver 1.3追加
+  "portrait_animation": {
+    "frame_interval_seconds": 0.1,
+    "portrait_skip_on_lag": true
+  }
+アニメーション用機能ですが、今表示中の画像から次の画像への表示送りの時間「frame_interval_seconds」と
+
+後半のコロニーや永住コロニーの場合、どうしても低FPSになります。その際ポートレートをアニメーションすると
+今まで10秒で終端までの画像が表示されていたのに、12秒かかってしまったりします。frame_interval_seconds経過して、超過した分
+例えばframe_interval_secondsの2倍の時間がかかった場合でも1枚しか画像表示を切り替えませんでした。
+そのため2倍遅れれば2枚先の画像に切り替えると言った機能を有効にするフラグ「portrait_skip_on_lag」です。
+
+「frame_interval_seconds」は0.1だと大体0.1s毎に画像切り替えをします。0.06にすると再生速度が変わります。(0.06では18FPSに低下した場合表示送りに影響出ますので、portrait_skip_on_lagをtrue推奨)
+「portrait_skip_on_lag」はtrueで表示送りの補間をします。「frame_interval_seconds」は0.1だと大体5FPSまでは同じ終端までの時間で再生されるはずです。
+
 ７．ファイル集計.py
 デバッグ用でも
 
 ③仕様について
-動物、メカノイドには対応していません（心情ない？Nullになってしまう。原因がわかれば対応したいですが、今のところは除外）
+動物、メカノイドには対応していません（心情ない、除外）
 
 アニメーションは
-jsonのディスプレイ時間の間大体4フレームごとに画像を切り替えます。
+jsonのディスプレイ時間の間大体4フレームごとに画像を切り替えます。(Setting.jsonで変更可能)
 
 ほかのModで心情を追加するものならその心情名を⑤の内容に書けば、それ用の画像が表示されます。
 心情テーブルの取り方は以下の通りです。
@@ -95,15 +132,24 @@ stagesの箇所が心情名です。ただ[0]~となっているので、後述�
 「.*宿舎」とすれば「連続した任意の文字」＋「宿舎」とマッチするという意味になります。
 上記のように書くと「「ひどい宿舎」「豪華な宿舎」をキャッチすればいいんだな」と処理してくれます。
 
------------補足-------------
-1.moodAndInteractionImpact=rimworldの心情とインタラクト名のコンテナ
-2.group=心情名とインタラクト名を正規表現、完全一致で一括りにまとめる
-3.priority_weights=これは優先順位で、定義の上から順番にどの画像を表示するかを確率で決めるもの
+ver 1.3.101以降
+【機能追加】
+対象→Preset.json、Setting.json
+・Preset.json
+ポートレートを切り替える機能として「割り込み」を追加しました。
+どういうのかというと、ポーンが痛みが増えた(ダメージや持病)際特定のコンテキストでポートレートを切り替えます。
+現在は「PainIncrease(痛みの増加)」、「Downed(ダウン時)」の2つがこの割り込み機能のコンテキストとなります。
 
-4.merged_keys=(1.)と(2.)をまとめる。
-5.matched_priority_weights=(4.)を(3.)のキーと一致するものだけにする。
-6.TexTureコンテナ=(5.)のランダムな1つのキーとTexTureコンテナのキーの正規表現、完全一致するものを抽出し、Texture2Dを後続に渡す。
------------補足-------------
+CustomPortraitsEx\template\Template.json
+に設定例があるので参考にしてください。
+
+また、Interruptキー以下を定義しなくても(割り込み要らない人)大丈夫です。
+
+・Setting.json
+"interrupt_fallback_to_steady": true
+こちらのフラグを追加しました。これは割り込み側にもpriority weightが設定できて、痛みを優先するかダウンを優先するかが設定できます。
+また、確率も設定できるためその確率ですべてすり抜けてしまった際に「平常時(割り込みではないほう)」のポートレート切替を有効にするかです。
+trueなら有効、falseなら無効です。
 
 ④使い方（ゲーム中）
 このMODはポーンの心情、インタラクト結果によって左下の画像(インスペクター)を表示切替するものです。
@@ -117,19 +163,20 @@ stagesの箇所が心情名です。ただ[0]~となっているので、後述�
 ⑤使い方（ゲーム外）
 1.Gitに配置してあるリリース済みのdll2つをReally Custom PortraitsのAssembliesに上書きしてください。
 
-2.Presetのjsonに以下を記載します(ver1.0)Presetのjson名は管理の観点からpreset_nameキーの値と一致させたほうがいいかもです。
+2.Presetのjsonに以下を記載します(ver1.0)json名とpreset_nameキーの値と一致させてください。
 
 {
   "preset_name": "ABCD",←これが〇〇のか所です。
   "conditions": {
+    "repeat_rules": "〇〇RepeatSetting.json",←Repeat設定用ファイルの指定です。設定方法は「Repeat機能.txt」を見てください。
     "fallback_mood": "Idle",←これは後述のpriority_weightsで確率で選ばれなかった場合の画像表示です。何も紐づくref keyがない場合は
     							Really Custom Portraitsが持っている画像で表示します。
     "fallback_mood_on_death": "Dead",←これはポーンが死んだ場合のref keyです。
     "refs": {←ここにテクスチャ設定等書いていきます。ここのキー名とpriority_weightsの確率で選択されたキー名が一致する場合、その画像を表示されます。
       "雨が降ってずぶぬれ": {←ref key これは正規表現を使えます。
-      							これはpriority_weightsのキー名と一致するもの、もしくはpriority_weightsのピックアップしたキー名を正規表現でヒットさせることも可能です。
+      							これはpriority_weightsのキー名と一致するもの、
       							例)refs=Key:雨.*ずぶぬれ|Value:~ ==> priority_weights=Key:雨が降ってずぶぬれ|Value:~ →この内容で画像表示
-      							これはref keyの側からpriority_weightsのピックアップしたキーと一致判定されます。
+      							ref keyの側からpriority_weightsのピックアップしたキーと一致判定されます。
         "textures": {←ここは固定でtextures
           "animation_mode": 1,←このrefはアニメーションかどうか 1 = アニメーション画像、 0 = 1つだけ表示のみ
           "display_duration": 6.0,←画像、アニメーション画像の表示時間
@@ -139,6 +186,18 @@ stagesの箇所が心情名です。ただ[0]~となっているので、後述�
           ]
         }
       },
+      －－－－－－－－－－－－－－－－－↓ver 1.3.5 mp4対応後のみ↓－－－－－－－－－－－－－－－－－
+      "Downed": {
+        "video": {
+          "loop": true,
+          "display_duration":6.0,
+          "fallback_texture": "〇〇/Downed/1.dds",
+          "files": [
+            "〇〇/Downed/down.mp4"
+          ]
+        }
+      },
+      －－－－－－－－－－－－－－－－－↑ver 1.3.5 mp4対応後のみ↑－－－－－－－－－－－－－－－－－
       "不快感": {
         "textures": {
           "animation_mode": 1,
@@ -186,19 +245,48 @@ stagesの箇所が心情名です。ただ[0]~となっているので、後述�
       ]
     },
     "priority_weights": {←優先順位と選択率の定義です。上から順に定義したものが先に評価され、weightの項目によって選択されます。
-      "不快感": {←基本はgroupのキーに書かれたものと一致するものを記載します。正規表現も使用できます。その際は
-      			心情名＋インタラクト名＋groupのキー名の内容でヒットするか見ます。なのでgroup化しなくてもいいものもを記載することができます。
+      "不快感": {←基本はgroupのキーに書かれたものと一致するものを記載します。
       			例)priority_weights=Key:.*を見た|Value=~とするとポーンの心情に「死んでゆく仲間を見た」「死体を見た」があればそれをピックアップ
       			更にgroupに「死を見た」があればそれをピックアップし、priority_weightsのValueのweightの確率で判定できます。
-      			後続のref key(Texture定義があった上のほうのもの)には「.*を見た」で渡されるのでref keyには".*を見た": {～"files": 
-      			["ABCD/...を見た/1.dds~79.dds"]とすれば一致してその画像が表示されます。ちなみにファイル名Windows上「.*」ものを名前に含めれないので
-      			「...」としています。この「...」で一致不一致を見ているわけではないので基本なんでもよいです。
         "category": 0,←現在未使用
         "weight": 20←確率0~100までとします。マイナスや0だと選ばれないですし、100以降も必ず選択されるので意味ないです。
       },
       "雨が降ってずぶぬれ": {
         "category": 0,
         "weight": 20
+      }
+    },
+    "interrupt": {←割り込み時設定、ここ以下なくてもいいです。
+      "monitors": [←監視対象、ポーンがダメージを負ったとかの対象を書きます。
+        "PainIncrease",←痛みの加算によるref key(コンテキスト)
+        "Downed"←ポーンのダウンによるref key
+      ],
+      "monitor_behaviors": {←監視対象の動作定義です。詳細はmonitor_behaviors.txtをご確認ください。
+        "PainIncrease": {←コンテキスト名を書いてください。
+          "trigger_mode": "threshold",
+          "delta_threshold": 0.2
+        },
+        "Downed": {
+          "trigger_on_enter": true
+        }
+      },
+      "group": {←これは割り込み用のグループ設定です
+        "PainIncrease": [
+          "PainIncrease"
+        ],
+        "Downed": [
+          "Downed"
+        ]
+      },
+      "priority_weights": {←これは割り込み用の優先度設定
+        "Downed": {
+          "category": 0,
+          "weight": 100
+        },
+        "PainIncrease": {
+          "category": 0,
+          "weight": 100
+        }
       }
     }
   }
@@ -213,7 +301,7 @@ stagesの箇所が心情名です。ただ[0]~となっているので、後述�
       "世間話": {←ここにインタラクト名を記載します。正規表現でもよいです。ポーンのインタラクト名は「～の勉強」みたいに複数ある場合、一気に正規表現で
       				一致させるのがいいと思われます。
         "is_recipient": 1,←このインタラクトを受けた側を判定で取りたい場合は「1」を設定します。世間話だと、世間話をされた側のことです。
-        "matched_recipient_key": "世間話_受け手",←Preset.json側で拾う名前です。Preset.json側で"group"{ "世間話" : ["世間話_受け手"]}・・・①もしくは、
+        "matched_recipient_key": "世間話_受け手",←〇〇.json(Preset.json)側で拾う名前です。Preset.json側で"group"{ "世間話" : ["世間話_受け手"]}・・・①もしくは、
         							"priority_weight":{"世間話_受け手":{～}}or　グループされている①の場合"priority_weight":{"世間話":{～}}とします。
         "is_initiator": 1,←送り手側です。インタラクトを送った側で判定を取りたい場合は「1」を設定します。世間話だと話題を持ちかけてきた側のことです。
         "matched_initiator_key": "世間話_送り手",←受けての送り手側バージョン
@@ -243,5 +331,15 @@ stagesの箇所が心情名です。ただ[0]~となっているので、後述�
   "initiator_log_retention": {
     "max_entries": 20,
     "seconds": 12.0
-  }
+  },
+  "portrait_animation": {←画像アニメーションの表示設定
+    "frame_interval_seconds": 0.1,←現在の画像から次の画像への表示速度、こちらだと0.1秒毎となります。
+    "portrait_skip_on_lag": true←後半のFPSが出ない状況でも画像表示終端までの秒数を補間する機能
+  },
+  "interrupt_fallback_to_steady": true←これは割り込み側にもpriority weightが設定できて、
+  									痛みを優先するかダウンを優先するかが設定できます。
+  									また、確率も設定できるためその確率ですべてすり抜けてしまった際に
+  									「平常時(割り込みではないほう)」のポートレート切替を有効にするかです。
+  									trueなら有効、falseなら無効です。falseですべてすり抜けた際は〇〇.jsonの
+  									fallback_moodの値となります。
 }

@@ -11,7 +11,7 @@ Portraits can be set in "Health" tab of a pawn.
 Images are loaded from "CustomPortraits" folder in RimWorld root directory.  
 Something like: .../steamapps/common/RimWorld/CustomPortraits  
 You can use a button in mod settings to find it quickly.  
-.jpg, .jpeg, .png images are supported.  
+.jpg, .jpeg, .png and .dds (DXT1, DXT5) images are supported.  
 Nested directories are supported.  
 No need to restart for every file.  
 Textures loaded on demand every time you open portrait dropdown.
@@ -19,7 +19,7 @@ Textures loaded on demand every time you open portrait dropdown.
 # ![Features](https://i.postimg.cc/zBzB6kTG/h-Features.png)
 
 - Images of any size.
-- Transparency.
+- Transparency. (where format allows)
 - Multiple portraits for each pawn.
 - A lot of customization options and increasing.
 - Available for animals on def-basis. (only 1.4 and 1.5 versions)
@@ -102,10 +102,22 @@ _Normalize presentation of alternatives!_
 
 # ![Changelog](https://i.postimg.cc/k4T4mtyF/h-Changelog.png)
 
+#### 05.09.25
+
+- HAR compat errors fixed.
+
+#### 02.09.25
+
+- HAR support. (Tested on [Aya] Silkiera Race)
+
+#### 15.08.25
+
+- DDS (DXT1, DXT5) support added to 1.6 and 1.5.
+
 ### 06.08.25
 
 - Tested on 1.6.4535.
-- Enabled compatibility for CM Color Coded Mood Bar and[LTO] Colony Groups.
+- Enabled compatibility for CM Color Coded Mood Bar and [LTO] Colony Groups.
 - Verified compatibility with Pawn Badge Fan Fork, Job In Bar, [NL] Dynamic Portraits, [NL] Custom Portraits.
 - Added mod setting to remove console spam. (Default: disabled)
 

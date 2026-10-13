@@ -1,4 +1,4 @@
-﻿using CustomPortraits;
+using CustomPortraits;
 using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
 using HarmonyLib;
 using Newtonsoft.Json.Linq;
@@ -145,38 +145,41 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         public static List<string> GetAllKeysByPawnTrimmedFinal(Pawn targetPawn)
         {
-            //foreach (var kvp in RecipientLogDict)
-            //{
-            //    Log.Message($"[PortraitsEx] {kvp.Key} matched_key: {kvp.Value.matched_key} {kvp.Value.pawn}");
-            //}
+            var result = new List<string>();
+            var seen = new HashSet<string>();
 
-            //foreach (var kvp in InitiatorLogDict)
-            //{
-            //    Log.Message($"[PortraitsEx] {kvp.Key} matched_key: {kvp.Value.matched_key} {kvp.Value.pawn}");
-            //}
+            ExtractKeysFromDict(RecipientLogDict, targetPawn, seen, result);
+            ExtractKeysFromDict(InitiatorLogDict, targetPawn, seen, result);
 
-            var recipient_keys = RecipientLogDict
-                .Where(kvp => kvp.Value.pawn == targetPawn)
-                .Select(kvp =>
+            return result;
+        }
+
+        private static void ExtractKeysFromDict(Dictionary<string, PawnCacheEntry> dict, Pawn targetPawn, HashSet<string> seen, List<string> result)
+        {
+            if (dict.Count == 0) return;
+
+            foreach (var kvp in dict)
+            {
+                if (kvp.Value.pawn == targetPawn)
                 {
-                    if (kvp.Value.matched_key != "") return kvp.Value.matched_key;
-                    int atIndex = kvp.Key.IndexOf('@');
-                    return atIndex >= 0 ? kvp.Key.Substring(0, atIndex) : kvp.Key;
-                });
+                    string matched = kvp.Value.matched_key;
+                    string keyToAdd;
+                    if (!string.IsNullOrEmpty(matched))
+                    {
+                        keyToAdd = matched;
+                    }
+                    else
+                    {
+                        int atIndex = kvp.Key.IndexOf('@');
+                        keyToAdd = atIndex >= 0 ? kvp.Key.Substring(0, atIndex) : kvp.Key;
+                    }
 
-            var initiator_keys = InitiatorLogDict
-                .Where(kvp => kvp.Value.pawn == targetPawn)
-                .Select(kvp =>
-                {
-                    if (kvp.Value.matched_key != "") return kvp.Value.matched_key;
-                    int atIndex = kvp.Key.IndexOf('@');
-                    return atIndex >= 0 ? kvp.Key.Substring(0, atIndex) : kvp.Key;
-                });
-
-            return recipient_keys
-                .Concat(initiator_keys)
-                .Distinct()
-                .ToList();
+                    if (seen.Add(keyToAdd))
+                    {
+                        result.Add(keyToAdd);
+                    }
+                }
+            }
         }
 
         private static void PushDict(string label_cap, InteractionFilter filter, Pawn initiator, Pawn recipient)

@@ -10,8 +10,6 @@
 - **If I become inactive or stop updating this mod:**  
   Anyone is completely free to fork, adopt, update, and re-upload this mod for newer RimWorld versions. You do not need to ask for my permission.  
   *(Please maintain the credits to both the original author, Foxy, and this fork).*
-- **If the original author returns:**  
-  If Foxy returns and wishes to incorporate these changes into the official mod, or requests the removal/transfer of this fork, I will gladly comply.
 
 [![Steam Workshop|Really Custom Portraits](https://img.shields.io/steam/subscriptions/2956572955?style=for-the-badge&logo=steam&label=Really%20Custom%20Portraits&labelColor=blue
 )](https://steamcommunity.com/sharedfiles/filedetails/?id=2956572955)

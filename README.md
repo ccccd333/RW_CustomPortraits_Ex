@@ -5,11 +5,6 @@
 - The extended features, fixes, and modifications in this fork are primarily located under:
   - `[Target version]/Source/CustomPortraitsEx/` (and related patches/extensions)
 - All new code and changes authored by me in this fork are licensed under the **[MIT License](https://opensource.org/licenses/MIT)** (feel free to use, modify, and redistribute).
----
-## Fork & Continuation Policy (引き継ぎ方針)
-- **If I become inactive or stop updating this mod:**  
-  Anyone is completely free to fork, adopt, update, and re-upload this mod for newer RimWorld versions. You do not need to ask for my permission.  
-  *(Please maintain the credits to both the original author, Foxy, and this fork).*
 
 [![Steam Workshop|Really Custom Portraits](https://img.shields.io/steam/subscriptions/2956572955?style=for-the-badge&logo=steam&label=Really%20Custom%20Portraits&labelColor=blue
 )](https://steamcommunity.com/sharedfiles/filedetails/?id=2956572955)

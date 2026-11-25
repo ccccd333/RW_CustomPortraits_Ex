@@ -18,8 +18,9 @@
 
   <!-- RimWorld 1.7 Instance & Workshop Paths -->
   <PropertyGroup>
-    <RimWorldInstanceDir>C:\Users\sanos\AppData\Local\RimSort\instances\Hina 174977rev926\RimWorld</RimWorldInstanceDir>
-    <HarmonyModDir>C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\1.7\Assemblies</HarmonyModDir>
+    <RimWorldInstanceDir Condition="'$(RimWorldInstanceDir)' == ''">C:\Users\sanos\AppData\Local\RimSort\instances\Hina 174977rev926\RimWorld</RimWorldInstanceDir>
+    <RimWorldInstanceDir Condition="!Exists('$(RimWorldInstanceDir)\Assembly-CSharp.dll')">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldInstanceDir>
+    <HarmonyModDir Condition="'$(HarmonyModDir)' == ''">C:\Program Files (x86)\Steam\steamapps\workshop\content\294100\2009463077\1.7\Assemblies</HarmonyModDir>
   </PropertyGroup>
 
   <ItemGroup>

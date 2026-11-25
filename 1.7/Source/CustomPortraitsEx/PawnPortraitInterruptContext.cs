@@ -9,6 +9,13 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
     {
         public static PainInterruptContextResolver pain_interrupt_context_resolver = new PainInterruptContextResolver();
         public static DownedInterruptContextResolver down_interrupt_context_resolve = new DownedInterruptContextResolver();
+
+        public static void ClearTracking()
+        {
+            pain_interrupt_context_resolver.ClearTracking();
+            down_interrupt_context_resolve.ClearTracking();
+        }
+
         public static Dictionary<string, float> ComposeImpactMap(Pawn pawn, PortraitInterrupt interrupt, bool is_interrupt_active, out bool is_value_fetched)
         {
             Dictionary<string, float> impact_map = new Dictionary<string, float>();

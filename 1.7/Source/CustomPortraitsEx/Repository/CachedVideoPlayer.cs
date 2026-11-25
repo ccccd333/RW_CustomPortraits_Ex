@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Video;
 using Verse;
@@ -7,7 +6,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
 {
     /// <summary>
     /// 特定の動画ファイルパスに紐づいた VideoPlayer + RenderTexture のキャッシュ単位。
-    /// 一度ロードしたら Stop/Play で再利用し、URL の再設定（再デコード初期化）を避ける。
+    /// RimWorld 1.7 (Waylith.VideoDecode) では Stop() を呼ぶとデコーダスレッドと GPU フレームプールが破棄されるため、
+    /// 一時停止時は Pause() でデコーダを維持し、Cleanup() 時のみ破棄する。
     /// </summary>
     public class CachedVideoPlayer
     {
@@ -17,6 +17,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         private readonly VideoPlayer _player;
         private readonly RenderTexture _rt;
 
+        private bool _is_active = false;
         private bool _has_frame = false;
         private bool _is_video_ended = false;
         private bool _loop = true;
@@ -26,7 +27,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         public bool HasFrame => _has_frame;
         public long CurrentFrame => _player != null ? _player.frame : -1;
 
-        public bool is_playing => _player != null && (_player.isPlaying || _is_step_mode);
+        public bool is_playing => _player != null && _is_active;
         public bool is_step_mode => _is_step_mode;
         public bool is_video_ended
         {
@@ -34,10 +35,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
             {
                 if (_is_video_ended) return true;
                 if (_player == null || _loop || !_has_frame) return false;
-                // ステップモードでは isPlaying が常に false なのでフレーム位置で判定
                 if (!_player.isPlaying || _is_step_mode)
                 {
-                    // Unityイベント(loopPointReached)がラグ等で不発した場合のフォールバック
                     if (_player.frameCount > 0 && (ulong)_player.frame >= _player.frameCount - 2) return true;
                     if (_player.length > 0 && _player.time >= _player.length - 0.1) return true;
                 }
@@ -55,21 +54,21 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
             Object.DontDestroyOnLoad(_go);
 
             _player = _go.AddComponent<VideoPlayer>();
-            _player.playOnAwake      = false;
-            _player.renderMode       = VideoRenderMode.RenderTexture;
-            _player.audioOutputMode  = VideoAudioOutputMode.Direct;
+            _player.playOnAwake          = false;
+            _player.renderMode           = VideoRenderMode.RenderTexture;
+            _player.audioOutputMode      = VideoAudioOutputMode.Direct;
             _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
             _player.sendFrameReadyEvents = true;
-            _player.frameReady       += OnFrameReady;
-            _player.loopPointReached += OnLoopPointReached;
-            _player.errorReceived    += OnErrorReceived;
+            _player.frameReady           += OnFrameReady;
+            _player.loopPointReached     += OnLoopPointReached;
+            _player.errorReceived        += OnErrorReceived;
 
             _rt = new RenderTexture(256, 256, 0, RenderTextureFormat.ARGB32);
             _rt.Create();
             _player.targetTexture = _rt;
 
-            // URL は生成時に一度だけセットする（以後は変えない）
-            _player.url       = "file:///" + absolute_path.Replace("\\", "/");
+            // 1.7 の UnityStubs は生のファイルパスをそのまま受け付ける（# や % を含むパスでも欠損しない）
+            _player.url       = absolute_path;
             _player.isLooping = loop;
         }
 
@@ -77,19 +76,20 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         private void OnLoopPointReached(VideoPlayer vp)          => _is_video_ended = true;
         private void OnErrorReceived(VideoPlayer vp, string msg) => Log.Error($"[PortraitsEx] CachedVideoPlayer error ({absolute_path}): {msg}");
 
-        /// <summary>通常再生開始。2回目以降は先頭シークして再スタート。ステップモードも解除。</summary>
+        /// <summary>通常再生開始。2回目以降はデコーダを維持したまま先頭シークして再スタート。</summary>
         public void Play()
         {
             _is_video_ended = false;
             _has_frame      = false;
             _is_step_mode   = false;
+            _is_active      = true;
 
-            if (_player.isPlaying)
-                _player.Stop();
-
-            _player.frame     = 0;
             _player.isLooping = _loop;
             _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
+            if (_player.isPrepared)
+            {
+                _player.time = 0.0;
+            }
             _player.Play();
         }
 
@@ -99,13 +99,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
             _is_video_ended = false;
             _has_frame      = false;
             _is_step_mode   = true;
+            _is_active      = true;
 
-            if (_player.isPlaying)
-                _player.Stop();
-
-            _player.frame     = 0;
             _player.isLooping = _loop;
             _player.SetDirectAudioVolume(0, 0f);
+            if (_player.isPrepared)
+            {
+                _player.time = 0.0;
+            }
             _player.Play();
             _player.Pause();
         }
@@ -114,31 +115,24 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         public void SwitchToStepMode()
         {
             _is_step_mode = true;
-            if (_player != null && _player.isPlaying)
-                _player.Pause();
             if (_player != null)
+            {
+                _player.Pause();
                 _player.SetDirectAudioVolume(0, 0f);
+                if (global::CustomPortraits.Settings.Instance != null && global::CustomPortraits.Settings.Instance.debug)
+                {
+                    Log.Message($"[PortraitsEx] [Diag] CachedVideoPlayer.SwitchToStepMode: path={absolute_path}, frame={_player.frame}/{_player.frameCount}, prepared={_player.isPrepared}, double_step={PortraitCacheEx.Settings.double_step_forward}");
+                }
+            }
         }
 
-        /// <summary>ステップモード中に1フレーム進める。毎フレーム呼ぶ。</summary>
+        /// <summary>ステップモード中にデコード済みキューから1〜2フレーム進める。毎描画フレーム呼ぶ。</summary>
         public void StepForward()
         {
-//            Log.Message(
-//    $"[Video] StepForward called. " +
-//    $"stepMode={_is_step_mode}, " +
-//    $"ended={_is_video_ended}, " +
-//    $"isPlaying={_player?.isPlaying}, " +
-//    $"frame={_player?.frame}, " +
-//    $"frameCount={_player?.frameCount}"
-//);
-            //Log.Message($"[CustomPortraitsEx] StepForward called. is_step_mode={_is_step_mode}, is_video_ended={_is_video_ended}");
             if (_player != null && _is_step_mode && !_is_video_ended)
             {
-                _player.StepForward();
-                if (PortraitCacheEx.Settings.double_step_forward)
-                {
-                    _player.StepForward();
-                }
+                int steps = PortraitCacheEx.Settings.double_step_forward ? 2 : 1;
+                _player.StepFrames(steps);
             }
         }
 
@@ -146,14 +140,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         {
             _is_step_mode = false;
 
-            if (_player != null && !_is_video_ended)
+            if (_player != null && _is_active && !_is_video_ended)
             {
                 _player.SetDirectAudioVolume(0, PortraitCacheEx.Settings.video_audio_volume);
                 _player.Play();
             }
         }
 
-        /// <summary>停止（ポーン切り替え時など）。</summary>
+        /// <summary>一時停止（ポーン切り替え・コンテキスト切り替え時）。デコーダプールは維持する。</summary>
         public void Stop()
         {
             if (!Verse.UnityData.IsInMainThread)
@@ -162,8 +156,12 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
                 return;
             }
 
-            if (_player != null && (_player.isPlaying || _is_step_mode))
-                _player.Stop();
+            if (_player != null && _is_active)
+            {
+                _player.Pause();
+                _player.SetDirectAudioVolume(0, 0f);
+            }
+            _is_active      = false;
             _has_frame      = false;
             _is_video_ended = false;
             _is_step_mode   = false;
@@ -171,17 +169,20 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
 
         public void ResetEndedFlag() => _is_video_ended = false;
 
-        public Texture GetTexture()
+        public Texture GetTexture(Texture defaultFallback = null)
         {
-            if (_player != null && (_player.isPlaying || (_is_step_mode&& !_is_video_ended)) && _has_frame)
+            if (_player != null && _has_frame && _rt != null)
                 return _rt;
             if (_fallback_texture != null)
                 return _fallback_texture;
+            if (defaultFallback != null)
+                return defaultFallback;
             return _rt;
         }
 
         public void Cleanup()
         {
+            _is_active = false;
             if (_player != null)
             {
                 _player.Stop();

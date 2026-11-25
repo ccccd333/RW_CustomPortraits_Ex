@@ -37,11 +37,12 @@ namespace Foxy.CustomPortraits {
 				if (Has(path)) continue;
 				if (Settings.Instance.debug) Log.Message($"[Portraits] New portrait: {path}");
 				byte[] data = File.ReadAllBytes(file.FullName);
-				Texture2D tex = new Texture2D(2, 2) { name = path };
+				Texture2D tex = null;
 				try {
-					if (file.Extension.ToLower() == ".dds") {
-						tex.LoadImageDDS(data);
+					if (string.Equals(file.Extension, ".dds", StringComparison.OrdinalIgnoreCase)) {
+						tex = new DDS(data).CreateTexture();
 					} else {
+						tex = new Texture2D(2, 2);
 						tex.LoadImage(data);
 					}
 					tex.name = path;
@@ -49,7 +50,7 @@ namespace Foxy.CustomPortraits {
 				} catch (Exception ex) {
 					Log.Error($"[Portraits] Portrait failed to load: {path}");
 					Log.Error($"[Portraits] {ex.Message}");
-					UnityEngine.Object.Destroy(tex);
+					if (tex != null) UnityEngine.Object.Destroy(tex);
 					cache.Add(path, null);
 				}
 			}

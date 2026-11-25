@@ -7,7 +7,7 @@ namespace Foxy.CustomPortraits
 {
     /// <summary>
     /// ゲームロード開始時・メインメニュー退出時・ゲーム破棄時に、
-    /// メインスレッド側で即座に動画再生とポートレート状態を停止・リセットするパッチ。
+    /// メインスレッド側で即座に動画再生・ポートレート状態・社交キャッシュ・監視対象Pawn参照をリセットするパッチ。
     /// 
     /// 【背景と理由】
     /// RimWorldのセーブデータ読み込みは LongEventHandler により非同期（バックグラウンドスレッド）で実行されます。
@@ -17,7 +17,7 @@ namespace Foxy.CustomPortraits
     /// また、LoadedGame のタイミングまで停止しないと、ロード画面中にも前の動画や音声が再生され続けてしまいます。
     /// 
     /// そのため、ロード画面に入る直前の「メインスレッド」で呼ばれる以下の各処理をフックし、
-    /// セーブ読み込みスレッドが起動する前に安全かつ即座に ResetAll() を実行します。
+    /// セーブ読み込みスレッドが起動する前に安全かつ即座に ResetForGameLifecycle() を実行します。
     /// </summary>
     [HarmonyPatch(typeof(GameDataSaveLoader), nameof(GameDataSaveLoader.LoadGame), new System.Type[] { typeof(string) })]
     public static class Patch_GameDataSaveLoader_LoadGame
@@ -26,7 +26,7 @@ namespace Foxy.CustomPortraits
         {
             if (Settings.Instance.debug)
                 Log.Message($"[PortraitsEx] Patch_GameDataSaveLoader_LoadGame: Resetting all portraits before loading {saveFileName}");
-            ConditionDrivenPortrait.ResetAll();
+            ConditionDrivenPortrait.ResetForGameLifecycle();
         }
     }
 
@@ -37,7 +37,7 @@ namespace Foxy.CustomPortraits
         {
             if (Settings.Instance.debug)
                 Log.Message("[PortraitsEx] Patch_GenScene_GoToMainMenu: Resetting all portraits before returning to main menu");
-            ConditionDrivenPortrait.ResetAll();
+            ConditionDrivenPortrait.ResetForGameLifecycle();
         }
     }
 
@@ -48,7 +48,7 @@ namespace Foxy.CustomPortraits
         {
             if (Settings.Instance.debug)
                 Log.Message("[PortraitsEx] Patch_Game_Dispose: Resetting all portraits on game dispose");
-            ConditionDrivenPortrait.ResetAll();
+            ConditionDrivenPortrait.ResetForGameLifecycle();
         }
     }
 }

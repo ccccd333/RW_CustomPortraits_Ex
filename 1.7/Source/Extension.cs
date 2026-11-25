@@ -9,16 +9,12 @@ using Verse;
 
 namespace Foxy.CustomPortraits {
 	public static class Extension {
-		private static readonly FieldInfo fieldCachedPortraits = AccessTools.Field("RimWorld.PortraitsCache:cachedPortraits");
 		private static readonly FieldInfo fieldItemIcon = AccessTools.Field("Verse.FloatMenuOption:iconTex");
 		private static readonly FieldInfo fieldIconJustification = AccessTools.Field("Verse.FloatMenuOption:iconJustification");
 
 		private static void RemoveCachedPortraits(Pawn pawn) {
-			IDictionary cachedPortraits = (IDictionary)fieldCachedPortraits.GetValue(null);
-			foreach (object value in cachedPortraits.Values) {
-				IDictionary cache = (IDictionary)value;
-				if (!cache.Contains(pawn)) continue;
-				cache.Remove(pawn);
+			if (pawn != null) {
+				PortraitsCache.SetDirty(pawn);
 			}
 		}
 
@@ -50,7 +46,12 @@ namespace Foxy.CustomPortraits {
 			if (extraPartRightJustified.HasValue) option.extraPartRightJustified = extraPartRightJustified.Value;
 		}
 		public static InspectTabBase GetOpenTab(this IInspectPane pane) {
-			return pane?.CurTabs.FirstOrDefault(x => x.GetType() == pane.OpenTabType);
+			if (pane?.CurTabs == null || pane.OpenTabType == null) return null;
+			Type openType = pane.OpenTabType;
+			foreach (InspectTabBase tab in pane.CurTabs) {
+				if (tab != null && tab.GetType() == openType) return tab;
+			}
+			return null;
 		}
 
 		public static string Translate(this PortraitPosition position) {

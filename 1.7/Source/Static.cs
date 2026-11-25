@@ -1,4 +1,5 @@
-﻿using Foxy.CustomPortraits.CustomPortraitsEx;
+﻿using System.Reflection;
+using Foxy.CustomPortraits.CustomPortraitsEx;
 using HarmonyLib;
 using UnityEngine;
 using Verse;
@@ -19,8 +20,8 @@ namespace Foxy.CustomPortraits {
 		static Static() {
 			PortraitCache.Update();
 			PortraitCacheEx.Update();
-            Harmony h = new Harmony("Foxy.CustomPortraits");
-			h.PatchAll();
+			Harmony h = new Harmony("Foxy.CustomPortraits");
+			h.PatchAll(Assembly.GetExecutingAssembly());
 			ModCompatibility.PatchAll(h);
 		}
 	}

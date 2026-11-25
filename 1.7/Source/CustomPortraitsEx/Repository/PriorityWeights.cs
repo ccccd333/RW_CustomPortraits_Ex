@@ -24,10 +24,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         public PriorityWeights Clone()
         {
             PriorityWeights pw = new PriorityWeights();
+            pw.category = this.category;
             pw.weight = this.weight;
             pw.filter_name = this.filter_name;
             return pw;
-
         }
 
         public PriorityWeightCategory category = PriorityWeightCategory.RefName;

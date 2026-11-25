@@ -7,18 +7,19 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 {
     /// <summary>
     /// FPS計測、動画のステップモード移行判定、およびアニメーション画像のフレームスキップ管理を行うユーティリティ。
+    /// OnGUI は 1 描画フレームに複数回（Layout / Repaint / 入力イベント）呼ばれるため、
+    /// Time.frameCount で 1 描画フレームあたり 1 回のみ計測・判定を行う。
     /// </summary>
     public static class PortraitTimeManager
     {
         // ---- FPS計測 & ステップモード用 ----
+        private static int _last_fps_frame = -1;
         private static float _prev_frame_time = 0f;
         private static float _measured_fps = 60f;
-        //private static int _low_fps_count = 0;
         private static readonly Queue<float> _fps_history = new Queue<float>();
         private static bool _low_fps_detected = false;
 
         private static int _high_fps_count = 0;
-        //private static bool _high_fps_detected = false;
 
         public static bool LowFpsDetected => _low_fps_detected;
 
@@ -35,12 +36,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         private static float _last_update_time = Time.realtimeSinceStartup;
 
         // ---- 動画ストール検知用 ----
+        private static int _last_stall_frame = -1;
         private static long _last_video_frame = -1;
         private static float _last_video_frame_advance_time = 0f;
         private static int _stalled_render_frames = 0;
 
         public static void ResetVideoStallTimer()
         {
+            _last_stall_frame = -1;
             _last_video_frame = -1;
             _last_video_frame_advance_time = Time.realtimeSinceStartup;
             _stalled_render_frames = 0;
@@ -49,24 +52,28 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         public static void ResetAllTimers()
         {
             _last_update_time = Time.realtimeSinceStartup;
+            _last_fps_frame = -1;
             _prev_frame_time = 0f;
-            //_low_fps_count = 0;
             _low_fps_detected = false;
             _high_fps_count = 0;
             _fps_history.Clear();
-            //_high_fps_detected = false;
             ResetVideoStallTimer();
         }
 
         /// <summary>
         /// 動画のフレーム停止（ストール）を検知する。
-        /// 10フレーム以上かつ実時間で0.5秒以上フレームが進んでいない場合にストールと判定し、
+        /// 描画フレーム単位で設定回数以上かつ実時間で設定秒数以上フレームが進んでいない場合にストールと判定し、
         /// ステップモード状態へ強制設定した上で true を返す。
         /// </summary>
         public static bool CheckVideoStall(bool isVideoPlaying, bool hasFrame, bool isVideoEnded, long currentFrame)
         {
             if (!isVideoPlaying || !hasFrame || isVideoEnded || currentFrame < 0)
                 return false;
+
+            int frame_count = Time.frameCount;
+            if (_last_stall_frame == frame_count)
+                return false;
+            _last_stall_frame = frame_count;
 
             float now = Time.realtimeSinceStartup;
 
@@ -79,10 +86,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 return false;
             }
 
-            // フレームが前回から動いていない
+            // フレームが前回描画フレームから動いていない
             _stalled_render_frames++;
 
-            // 描画フレームが設定値以上経過し、実時間でも設定秒数以上停止している場合
             if (_stalled_render_frames >= PortraitCacheEx.Settings.video_stall_trigger_count &&
                 (now - _last_video_frame_advance_time) >= PortraitCacheEx.Settings.video_stall_trigger_seconds)
             {
@@ -102,20 +108,23 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         }
 
         /// <summary>
-        /// FPSを計測し、低FPS状態かどうかを判定する。
-        /// 条件を満たした場合にステップモードへ移行させるコールバックを実行する。
+        /// 1描画フレームに1回だけ実フレーム間隔からFPSを計測し、低FPS状態かどうかを判定する。
+        /// 条件を満たした場合にステップモード／通常再生への移行コールバックを実行する。
         /// </summary>
         public static void UpdateFpsMeasurement(bool isVideoPlaying, bool isVideoStepMode, System.Action onTransitionToStepMode, System.Action onTransitionToPlayMode)
         {
+            int frame_count = Time.frameCount;
+            if (_last_fps_frame == frame_count)
+                return;
+            _last_fps_frame = frame_count;
+
             float now = Time.realtimeSinceStartup;
             if (_prev_frame_time > 0f)
             {
                 float delta = now - _prev_frame_time;
-                if (delta > 0f)
+                if (delta > 0.00001f)
                 {
-
                     _measured_fps = 1f / delta;
-
                     _fps_history.Enqueue(_measured_fps);
 
                     while (_fps_history.Count > PortraitCacheEx.Settings.video_fps_history_size)
@@ -127,34 +136,21 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             if (_fps_history.Count == 0)
                 return;
 
-
-            //Log.Message($"[CustomPortraitsEx] Measured FPS: {_measured_fps:F2} {_prev_frame_time} {now} {PortraitCacheEx.Settings.video_step_mode_fps_threshold} {PortraitCacheEx.Settings.video_step_mode_trigger_count}");
-
-            if (_measured_fps < PortraitCacheEx.Settings.video_step_mode_fps_threshold)
+            float threshold = PortraitCacheEx.Settings.video_step_mode_fps_threshold;
+            if (_measured_fps < threshold)
             {
                 int low_fps_count = 0;
-
                 foreach (float fps in _fps_history)
                 {
-                    if(fps < PortraitCacheEx.Settings.video_step_mode_fps_threshold)
-                    {
+                    if (fps < threshold)
                         low_fps_count++;
-                    }
                 }
 
-                //_low_fps_count++;
-                
-                //_high_fps_detected = false;
                 if (low_fps_count >= PortraitCacheEx.Settings.video_step_mode_trigger_count)
                 {
                     _high_fps_count = 0;
-                    //_fps_history.Clear();
-
-                    ////if (Settings.Instance.debug)
-                    //    Log.Message($"[CustomPortraitsEx] Low FPS detected: {_measured_fps:F2} fps. Transitioning to step mode. {PortraitCacheEx.Settings.video_step_mode_fps_threshold} {PortraitCacheEx.Settings.video_step_mode_trigger_count}");
-
                     _low_fps_detected = true;
-                    // 現在ビデオ再生中でまだステップモードでなければ、動的に移行する
+
                     if (isVideoPlaying && !isVideoStepMode)
                     {
                         if (Settings.Instance.debug)
@@ -172,18 +168,15 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
                 if (_high_fps_count >= PortraitCacheEx.Settings.video_play_mode_trigger_count)
                 {
-                    //_high_fps_detected = true;
                     if (isVideoPlaying && isVideoStepMode)
                     {
                         if (Settings.Instance.debug)
                             Log.Message($"[CustomPortraitsEx] FPS recovered: {_measured_fps:F2} fps. Transitioning back to play mode. high_fps_count: {_high_fps_count} trigger count: {PortraitCacheEx.Settings.video_play_mode_trigger_count}");
                         onTransitionToPlayMode?.Invoke();
-
                     }
 
                     _low_fps_detected = false;
                 }
-                
             }
         }
 
@@ -194,26 +187,23 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         {
             skipCount = 1;
             float currentTime = Time.realtimeSinceStartup;
-            
+
             if (currentTime - _last_update_time >= frameIntervalSeconds)
             {
-                if (skipOnLag)
+                if (skipOnLag && frameIntervalSeconds > 0.0001f)
                 {
-                    // 現在の時刻と前フレームの時刻を計算して、frameIntervalSecondsに
-                    // 収まらない場合はその分スキップする。
                     float delta = currentTime - _last_update_time;
                     skipCount = Mathf.FloorToInt(delta / frameIntervalSeconds);
-                    // 余り分も次インターバルに含めるため、加算で更新
                     _last_update_time += skipCount * frameIntervalSeconds;
                 }
                 else
                 {
                     _last_update_time = currentTime;
                 }
-                return true; // 次のポートレートへ進む
+                return true;
             }
-            
-            return false; // 進まない
+
+            return false;
         }
     }
 }

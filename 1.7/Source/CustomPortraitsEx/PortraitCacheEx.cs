@@ -75,32 +75,128 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
         }
 
+        private static void DisposeRefs(Refs r)
+        {
+            if (r == null) return;
+
+            foreach (var tx_pair in r.txs)
+            {
+                foreach (var tex in tx_pair.Value.txs)
+                {
+                    if (tex != null) UnityEngine.Object.Destroy(tex);
+                }
+            }
+            r.txs.Clear();
+
+            foreach (var cvp in r.cached_videos.Values)
+            {
+                cvp?.Cleanup();
+            }
+            r.cached_videos.Clear();
+
+            foreach (var ve in r.videos.Values)
+            {
+                if (ve?.fallback_texture != null)
+                {
+                    UnityEngine.Object.Destroy(ve.fallback_texture);
+                    ve.fallback_texture = null;
+                }
+            }
+            r.videos.Clear();
+        }
+
+        private static bool LoadPresetConditions(
+            string preset_name,
+            JObject root,
+            Refs r,
+            out string repeat_rules_json_name,
+            List<string> error_message)
+        {
+            repeat_rules_json_name = "";
+            bool preset_loaded_successfully = true;
+
+            JToken conditions_token = root["conditions"];
+            if (conditions_token == null)
+            {
+                preset_loaded_successfully = false;
+                error_message?.Add("The preset JSON definition is incorrect." + preset_name);
+                return false;
+            }
+
+            foreach (var token in conditions_token)
+            {
+                var mood_prop = (JProperty)token;
+                string key = mood_prop.Name;
+                JToken value = mood_prop.Value;
+                try
+                {
+                    if (key == "fallback_mood")
+                    {
+                        if (value is JValue fallback_mood && fallback_mood.Value != null)
+                        {
+                            r.fallback_mood = fallback_mood.Value.ToString();
+                        }
+                    }
+                    else if (key == "fallback_mood_on_death")
+                    {
+                        if (value is JValue fallback_mood_on_death && fallback_mood_on_death.Value != null)
+                        {
+                            r.fallback_mood_on_death = fallback_mood_on_death.Value.ToString();
+                        }
+                    }
+                    else if (key == "refs")
+                    {
+                        Refts(preset_name, key, value, r);
+                    }
+                    else if (key == "interaction_filter")
+                    {
+                        InteractionFilter(preset_name, key, value, r);
+                    }
+                    else if (key == "group")
+                    {
+                        Group(preset_name, key, value, r);
+                    }
+                    else if (key == "priority_weights")
+                    {
+                        PriorityWeights(preset_name, key, value, r);
+                    }
+                    else if (key == "interrupt")
+                    {
+                        Interrupt(preset_name, key, value, r);
+                    }
+                    else if (key == "repeat_rules")
+                    {
+                        repeat_rules_json_name = GetRepeatRulesJsonName(value);
+                    }
+                    else
+                    {
+                        preset_loaded_successfully = false;
+                        if (error_message != null)
+                            error_message.Add("The preset JSON definition is incorrect." + preset_name);
+                        else
+                            Log.Warning("The preset JSON definition is incorrect." + preset_name);
+                    }
+                }
+                catch (Exception e)
+                {
+                    preset_loaded_successfully = false;
+                    if (error_message == null)
+                        Log.Warning("The preset JSON definition is incorrect." + preset_name + " [wt?]: " + e.Message);
+                }
+            }
+
+            return preset_loaded_successfully;
+        }
+
         public static List<string> ReadPresetJson(string preset_name)
         {
             // 再読取り側、mod設定ページから呼び出し
-
             List<string> error_message = new List<string>();
 
             if (Refs.TryGetValue(preset_name, out var oldRefs))
             {
-                // 再読み込み時は古いTexture2Dを解放してからRemoveする
-                foreach (var tx_pair in oldRefs.txs)
-                {
-                    foreach (var tex in tx_pair.Value.txs)
-                    {
-                        if (tex != null) UnityEngine.Object.Destroy(tex);
-                    }
-                }
-                // videos は VideoEntry のみなので特別なリソース解放不要。
-                // VideoPlayerManager はグローバルシングルトンなので止めるだけ。
                 VideoPlayerManager.DestroyInstance();
-                // プールキャッシュも破棄
-                foreach (var cvp in oldRefs.cached_videos.Values)
-                {
-                    cvp.Cleanup();
-                }
-                oldRefs.cached_videos.Clear();
-                oldRefs.videos.Clear();
+                DisposeRefs(oldRefs);
                 Refs.Remove(preset_name);
             }
 
@@ -125,72 +221,10 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
             try
             {
-                JObject root = JObject.Parse(File.ReadAllText(@files[0].FullName));
+                JObject root = JObject.Parse(File.ReadAllText(files[0].FullName));
                 Refs r = new Refs();
-                string repeat_rules_json_name = "";
-                bool preset_loaded_successfully = true;
-                // TODO:ここもリファクタリング必要・・・
-                foreach (var token in root["conditions"])
-                {
-                    var mood_prop = (JProperty)token;
-                    string key = mood_prop.Name;
-                    JToken value = mood_prop.Value;
-                    try
-                    {
-                        if (key == "fallback_mood")
-                        {
-                            if (value is JValue fallback_mood)
-                            {
-                                r.fallback_mood = fallback_mood.Value.ToString();
+                bool preset_loaded_successfully = LoadPresetConditions(preset_name, root, r, out string repeat_rules_json_name, error_message);
 
-                            }
-
-                        }
-                        else if (key == "fallback_mood_on_death")
-                        {
-                            if (value is JValue fallback_mood_on_death)
-                            {
-                                r.fallback_mood_on_death = fallback_mood_on_death.Value.ToString();
-
-                            }
-                        }
-                        else if (key == "refs")
-                        {
-                            Refts(preset_name, key, value, r);
-                        }
-                        else if (key == "interaction_filter")
-                        {
-                            InteractionFilter(preset_name, key, value, r);
-                        }
-                        else if (key == "group")
-                        {
-                            Group(preset_name, key, value, r);
-                        }
-                        else if (key == "priority_weights")
-                        {
-                            PriorityWeights(preset_name, key, value, r);
-                        }
-                        else if (key == "interrupt")
-                        {
-                            Interrupt(preset_name, key, value, r);
-                        }
-                        else if (key == "repeat_rules")
-                        {
-                            repeat_rules_json_name = GetRepeatRulesJsonName(value);
-                        }
-                        else
-                        {
-                            preset_loaded_successfully = false;
-                            error_message.Add("The preset JSON definition is incorrect." + preset_name);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        preset_loaded_successfully = false;
-                        //error_message.Add("The preset JSON definition is incorrect." + preset_name + " [wt?]: " + e.Message);
-                    }
-                }
-                //Log.Message($"[PortraitsEx] Result ==> Target preset: {preset_name} Refs Count: {r.txs.Count} Group Filter Count: {r.group_filter.Count} PriorityWeight Count: {r.priority_weights.Count}");
                 if (!Refs.ContainsKey(preset_name))
                 {
                     Refs.Add(preset_name, r);
@@ -202,6 +236,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 }
                 else
                 {
+                    DisposeRefs(r);
                     Log.Warning($"[PortraitsEx] Duplicate preset name detected. ==> Target preset: {preset_name}");
                 }
             }
@@ -221,7 +256,6 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             }
 
             return error_message;
-
         }
 
         private static void AddPresetLoadError(string preset_name, string error_message)
@@ -301,73 +335,11 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
             foreach (FileInfo file in files)
             {
-                JObject root = JObject.Parse(File.ReadAllText(@file.FullName));
+                JObject root = JObject.Parse(File.ReadAllText(file.FullName));
                 string preset_name = root["preset_name"].ToString();
                 Refs r = new Refs();
-                string repeat_rules_json_name = "";
-                bool preset_loaded_successfully = true;
-                // TODO:やる気になったら、再読み込み時とjsonが読み取れない場合はテクスチャの削除をする
-                // メモリリークしたっていう人がいれば優先で対応
-                foreach (var token in root["conditions"])
-                {
-                    var mood_prop = (JProperty)token;
-                    string key = mood_prop.Name;
-                    JToken value = mood_prop.Value;
-                    try
-                    {
-                        if (key == "fallback_mood")
-                        {
-                            if (value is JValue fallback_mood)
-                            {
-                                r.fallback_mood = fallback_mood.Value.ToString();
+                bool preset_loaded_successfully = LoadPresetConditions(preset_name, root, r, out string repeat_rules_json_name, null);
 
-                            }
-
-                        }
-                        else if (key == "fallback_mood_on_death")
-                        {
-                            if (value is JValue fallback_mood_on_death)
-                            {
-                                r.fallback_mood_on_death = fallback_mood_on_death.Value.ToString();
-
-                            }
-                        }
-                        else if (key == "refs")
-                        {
-                            Refts(preset_name, key, value, r);
-                        }
-                        else if (key == "interaction_filter")
-                        {
-                            InteractionFilter(preset_name, key, value, r);
-                        }
-                        else if (key == "group")
-                        {
-                            Group(preset_name, key, value, r);
-                        }
-                        else if (key == "priority_weights")
-                        {
-                            PriorityWeights(preset_name, key, value, r);
-                        }
-                        else if (key == "interrupt")
-                        {
-                            Interrupt(preset_name, key, value, r);
-                        }
-                        else if (key == "repeat_rules")
-                        {
-                            repeat_rules_json_name = GetRepeatRulesJsonName(value);
-                        }
-                        else
-                        {
-                            preset_loaded_successfully = false;
-                            Log.Warning("The preset JSON definition is incorrect." + preset_name);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        preset_loaded_successfully = false;
-                        Log.Warning("The preset JSON definition is incorrect." + preset_name + " [wt?]: " + e.Message);
-                    }
-                }
                 Log.Message($"[PortraitsEx] Result ==> Target preset: {preset_name} Refs Count: {r.txs.Count} Group Filter Count: {r.group_filter.Count} PriorityWeight Count: {r.priority_weights.Count}");
                 if (!Refs.ContainsKey(preset_name))
                 {
@@ -380,6 +352,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 }
                 else
                 {
+                    DisposeRefs(r);
                     Log.Warning($"[PortraitsEx] Duplicate preset name detected. ==> Target preset: {preset_name}");
                 }
             }
@@ -860,11 +833,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
                     }
                     intf.interaction_name = intf_key;
-                    InteractionSelectionMap.InteractionFilter.Add(intf_key, intf);
+                    InteractionSelectionMap.InteractionFilter[intf_key] = intf;
                     if (Utility.IsRegexPattern(intf_key))
                     {
-                        //Log.Message($"[PortraitsEx] InteractionFilter ==> Target preset: {preset_name} ADDREGEX");
-                        InteractionSelectionMap.intf_regex_cache.Add(intf_key, PatternMatcherFactory.Create(intf_key));
+                        InteractionSelectionMap.intf_regex_cache[intf_key] = PatternMatcherFactory.Create(intf_key);
+                    }
+                    else
+                    {
+                        InteractionSelectionMap.intf_regex_cache.Remove(intf_key);
                     }
                     Log.Message($"[PortraitsEx] InteractionFilter ==> Target preset: {preset_name} Key: {intf_key} matched_initiator_key: {intf.matched_initiator_key} matched_recipient_key: {intf.matched_recipient_key}");
                 }
@@ -872,7 +848,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             catch (Exception e)
             {
                 AddPresetLoadError(preset_name, "An error occurred while loading InteractionFilter. Please review the JSON that defines \"interaction_filter\" in the preset.");
-                throw e;
+                throw;
             }
         }
         private static void Group(string preset_name, string k, JToken n, Refs r)
@@ -933,7 +909,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             catch (Exception e)
             {
                 AddPresetLoadError(preset_name, "An error occurred while loading the preset Group key. Please review the JSON that defines \"Group\" in the preset.");
-                throw e;
+                throw;
             }
         }
 
@@ -997,7 +973,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             catch (Exception e)
             {
                 AddPresetLoadError(preset_name, "An error occurred while loading the priority_weights key in the preset. Please review the JSON that defines \"priority_weights\" in the preset.");
-                throw e;
+                throw;
             }
 
 
@@ -1134,7 +1110,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             catch (Exception e)
             {
                 AddPresetLoadError(preset_name, "An error occurred while loading the priority_weights key in the preset. Please review the JSON that defines \"priority_weights\" in the preset.");
-                throw e;
+                throw;
             }
         }
 
@@ -1241,10 +1217,11 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                             else
                             {
                                 string d = "";
-                                Utility.Delimiter(portrait_path, out d);
+                                string without_ext = Utility.Delimiter(portrait_path, out d);
                                 tx.d = d.ToLower();
-                                tx.file_base_path = portrait_path.Substring(0, portrait_path.LastIndexOf('/') + 1);
-                                tx.file_path_first = portrait_path.Substring(tx.file_base_path.Length);
+                                int slash_index = portrait_path.LastIndexOf('/');
+                                tx.file_base_path = slash_index >= 0 ? portrait_path.Substring(0, slash_index + 1) : "";
+                                tx.file_path_first = without_ext.Substring(tx.file_base_path.Length);
 
                                 tx.file_path = tx.file_base_path + tx.file_path_first + tx.d;
                                 //Log.Message($"[PortraitsEx] Load Txture ==> {tx.file_path}");
@@ -1324,7 +1301,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 }
 
                 AddPresetLoadError(preset_name, e.Message);
-                throw e;
+                throw;
             }
 
             return tx;
@@ -1332,17 +1309,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         private static Texture2D LoadTextureDDS(byte[] data)
         {
-            DDS dds = new DDS(data);
-
-            Texture2D tex = new Texture2D((int)dds.Width, (int)dds.Height, dds.Format, false);
-            if (dds.Format == TextureFormat.DXT1)
-                Utility.FlipDXT1(dds.DXT, (int)dds.Width, (int)dds.Height);
-            else
-                Utility.FlipDXT5(dds.DXT, (int)dds.Width, (int)dds.Height);
-            tex.LoadRawTextureData(dds.DXT);
-            tex.Apply(false, true);
-
-            return tex;
+            return new DDS(data).CreateTexture();
         }
 
 

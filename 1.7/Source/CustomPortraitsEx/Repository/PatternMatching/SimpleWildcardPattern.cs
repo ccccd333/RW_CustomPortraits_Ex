@@ -20,7 +20,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository.PatternMatching
                 if (part.Length == 0)
                     continue;
 
-                pos = input.IndexOf(part, pos, StringComparison.Ordinal);
+                pos = input.IndexOf(part, pos, StringComparison.OrdinalIgnoreCase);
                 if (pos < 0)
                     return false;
 

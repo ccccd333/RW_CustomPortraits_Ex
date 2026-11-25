@@ -7,6 +7,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 {
     public static class PawnPortraitContext
     {
+        [ThreadStatic]
+        private static List<Thought> _thought_buffer;
+
         public static Dictionary<string, float> ComposeImpactMap(Pawn pawn, out bool is_value_fetched)
         {
             Dictionary<string, float> impact_map = new Dictionary<string, float>();
@@ -14,17 +17,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             CollectInteractionImpacts(pawn, impact_map);
             AppendCombatContextImpact(pawn, impact_map);
             AppendDownedContext(pawn, impact_map);
-            if (impact_map.Count > 0)
-            {
-                is_value_fetched = true;
-            }
-            else
-            {
-                is_value_fetched = false;
-            }
-
+            is_value_fetched = impact_map.Count > 0;
             return impact_map;
-
         }
 
         // 以降特に監視する必要ない場合はここにメソッドを書いていく
@@ -33,78 +27,76 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         // 心情
         public static void CollectMoodThoughtImpacts(Pawn pawn, Dictionary<string, float> impact_map)
         {
-            // 別スレッドかどうか確認しておく ver1.6以降→要確認
-            //Log.Message($"Thread ID: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
-
-            List<Thought> outThoughts = new List<Thought>();
-            var thoughts = pawn.needs?.mood?.thoughts;
-
+            var thoughts = pawn?.needs?.mood?.thoughts;
             // メカノイドなどは心情を持たない
-            if (thoughts == null) { return; }
+            if (thoughts == null)
+                return;
 
-            thoughts.GetAllMoodThoughts(outThoughts);
+            List<Thought> outThoughts = _thought_buffer ?? (_thought_buffer = new List<Thought>(32));
+            outThoughts.Clear();
 
-
-            // 心情の文字と値のリスト化
-            foreach (var need in outThoughts)
+            try
             {
-                if (need == null || need.LabelCap == null)
-                {
-                    // 豪華な宿舎みたいにstage[0]がnullのものがあったりする。
-                    // なのでこれはそれ用
-                    //Log.Warning($"[PortraitsEx] WARN: need, LabelCap is null");
-                    continue;
-                }
+                thoughts.GetAllMoodThoughts(outThoughts);
 
-                try
+                // 心情の文字と値のリスト化
+                for (int i = 0; i < outThoughts.Count; i++)
                 {
+                    Thought need = outThoughts[i];
+                    if (need == null)
+                        continue;
 
-                    // TODO:心情の値のほうで重みをつけるようにするかもしれない。
-                    if (impact_map.ContainsKey(need.LabelCap))
+                    string label;
+                    try
                     {
-                        float weight1 = impact_map[need.LabelCap];
-                        float weight2 = need.MoodOffset();
-                        if (weight1 < weight2) impact_map[need.LabelCap] = weight2;
+                        label = need.LabelCap;
                     }
-                    else
+                    catch (Exception)
                     {
-                        impact_map.Add(need.LabelCap, need.MoodOffset());
+                        continue;
+                    }
+
+                    // 豪華な宿舎みたいにstage[0]がnullのものがあったりする。なのでこれはそれ用
+                    if (string.IsNullOrEmpty(label))
+                        continue;
+
+                    try
+                    {
+                        // TODO:心情の値のほうで重みをつけるようにするかもしれない。
+                        float offset = need.MoodOffset();
+                        if (impact_map.TryGetValue(label, out float existing))
+                        {
+                            if (existing < offset)
+                                impact_map[label] = offset;
+                        }
+                        else
+                        {
+                            impact_map.Add(label, offset);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        if (!impact_map.ContainsKey(label))
+                            impact_map.Add(label, 1.0f);
                     }
                 }
-                catch (Exception)
-                {
-                    //Log.Warning($"[PortraitsEx] WARN?(Processing will continue) Exception for need.LabelCap={need.LabelCap}: {e}");
-                    impact_map.Add(need.LabelCap, 1.0f);
-                }
-
+            }
+            finally
+            {
+                outThoughts.Clear();
             }
         }
 
         // インタラクト
         public static void CollectInteractionImpacts(Pawn pawn, Dictionary<string, float> impact_map)
         {
-            // インタラクションで、ポーンがかかわったことを返却する
-            PlayLogEntry_Interaction_ctor.CleanupExpiredAndExcessLogs();
-            List<string> pawn_interaction_list = PlayLogEntry_Interaction_ctor.GetAllKeysByPawnTrimmedFinal(pawn);
-
-            foreach (var key in pawn_interaction_list)
-            {
-                if (!impact_map.ContainsKey(key))
-                {
-                    impact_map[key] = 1.0f;
-                }
-            }
-
+            PlayLogEntry_Interaction_ctor.CollectActiveKeysIntoImpactMap(pawn, impact_map);
         }
 
         // 徴兵中
         public static void AppendCombatContextImpact(Pawn pawn, Dictionary<string, float> impact_map)
         {
-            
-            bool drafted = pawn.drafter?.Drafted ?? false;
-
-            //Log.Message($"[PortraitsEx] CombatContext ==> drafted? {drafted}");
-            if (drafted)
+            if (pawn?.drafter?.Drafted ?? false)
             {
                 impact_map[PortraitContextKeys.COMBAT_CONTEXT] = 1.0f;
             }
@@ -113,8 +105,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
         // ダウン中
         public static void AppendDownedContext(Pawn pawn, Dictionary<string, float> impact_map)
         {
-            bool downed = pawn?.health?.Downed ?? false;
-            if (downed)
+            if (pawn?.health?.Downed ?? false)
             {
                 impact_map[PortraitContextKeys.STEADY_DOWNED] = 1.0f;
             }

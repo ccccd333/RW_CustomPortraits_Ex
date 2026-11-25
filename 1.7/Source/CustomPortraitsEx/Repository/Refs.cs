@@ -1,8 +1,6 @@
 using CustomPortraits;
 using Foxy.CustomPortraits.CustomPortraitsEx.Repository.PatternMatching;
-using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using Verse;
 
 namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
@@ -23,61 +21,40 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Repository
         public string fallback_mood = "";
         public string fallback_mood_on_death = "";
 
-        //public Dictionary<string, Regex> txs_regex_cache = new Dictionary<string, Regex>();
         public Dictionary<string, IPatternMatcher> g_regex_cache = new Dictionary<string, IPatternMatcher>();
-        //public Dictionary<string, Regex> pw_regex_cache = new Dictionary<string, Regex>();
 
         public bool MatchDictKeysByRegex(string input, out string access_key)
         {
-            access_key = "";
-
-            foreach (var tx in txs)
+            if (!string.IsNullOrEmpty(input) && txs.ContainsKey(input))
             {
-                ////Log.Message($"[PortraitsEx] MatchDictKeysByRegex key: {tx.Key} input: {input}");
-                //if (txs_regex_cache.ContainsKey(tx.Key))
-                //{
-                //    var reg = txs_regex_cache[tx.Key];
-                //    if (reg.IsMatch(input))
-                //    {
-                //        //Log.Message($"[PortraitsEx] MatchDictKeysByRegex pic ==> key: {tx.Key} input: {input}");
-                //        access_key = tx.Key;
-                //        return true;
-                //    }
-                //}
-                //else
+                if (Settings.Instance.debug)
                 {
-                    if (tx.Key == input)
-                    {
-                        if (Settings.Instance.debug)
-                        {
-                            Log.Message($"[PortraitsEx] pic ==> key: {tx.Key} input: {input}");
-                        }
-                        access_key = tx.Key;
-                        return true;
-                    }
+                    Log.Message($"[PortraitsEx] pic ==> key: {input} input: {input}");
                 }
+                access_key = input;
+                return true;
             }
 
+            access_key = "";
             return false;
         }
 
         /// <summary>
-        /// videos 辞書のキーと input を照合する。
-        /// 一致した場合は access_key にキーを設定して true を返す。
+        /// videos 辞書のキーと input を O(1) で照合する。
         /// </summary>
         public bool MatchVideoKey(string input, out string access_key)
         {
-            access_key = "";
-            foreach (var v in videos)
+            if (!string.IsNullOrEmpty(input) && videos.ContainsKey(input))
             {
-                if (v.Key == input)
+                if (Settings.Instance.debug)
                 {
-                    if (Settings.Instance.debug)
-                        Log.Message($"[PortraitsEx] video ==> key: {v.Key} input: {input}");
-                    access_key = v.Key;
-                    return true;
+                    Log.Message($"[PortraitsEx] video ==> key: {input} input: {input}");
                 }
+                access_key = input;
+                return true;
             }
+
+            access_key = "";
             return false;
         }
 

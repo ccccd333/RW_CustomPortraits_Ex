@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using System;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -6,12 +6,15 @@ using Verse;
 
 namespace Foxy.CustomPortraits {
 	public static class PortraitDrawer {
-		private static readonly MethodInfo getterTabRect = AccessTools.DeclaredPropertyGetter(typeof(InspectTabBase), "TabRect");
+		private static readonly Func<InspectTabBase, Rect> getterTabRect =
+			AccessTools.MethodDelegate<Func<InspectTabBase, Rect>>(
+				AccessTools.DeclaredPropertyGetter(typeof(InspectTabBase), "TabRect"));
+
 		private static Rect GetTabRect(this InspectTabBase tab) {
-			return (Rect)getterTabRect.Invoke(tab, new object[] { });
+			return getterTabRect(tab);
 		}
 
-		public static void DrawNextToInspector(Texture2D tex, float paneTopY, InspectTabBase tab) {
+		public static void DrawNextToInspector(Texture tex, float paneTopY, InspectTabBase tab) {
 			Rect rect;
 			if (tab == null) {
 				rect = GetPortraitRect(TextAnchor.LowerLeft, 0, paneTopY - 30f);
@@ -36,29 +39,36 @@ namespace Foxy.CustomPortraits {
 			DrawTexture(rect, tex);
 		}
 
-		public static void DrawTopRight(Texture2D tex) {
+		public static void DrawTopRight(Texture tex) {
 			Rect rect = GetPortraitRect(TextAnchor.UpperRight, UI.screenWidth, 0);
 			DrawTexture(rect, tex);
 		}
 
-		public static void DrawActions(Texture2D tex) {
+		public static void DrawActions(Texture tex) {
 			float paneWidth = InspectPaneUtility.PaneWidthFor(Find.WindowStack.WindowOfType<IInspectPane>());
 			float y = UI.screenHeight - 35f - StaticSettings.OffsetY;
 			Rect rect = GetPortraitRect(TextAnchor.LowerLeft, paneWidth + StaticSettings.OffsetX, y, StaticSettings.ActionsBig);
 			DrawTexture(rect, tex);
 		}
 
-		public static void DrawCustom(Texture2D tex) {
+		public static void DrawCustom(Texture tex) {
 			Rect rect = GetPortraitRect(StaticSettings.CustomAnchor, StaticSettings.CustomX, StaticSettings.CustomY);
 			DrawTexture(rect, tex);
 		}
 
-		public static void DrawColonistBar(Rect rect, Texture2D tex) {
+		public static void DrawColonistBar(Rect rect, Texture tex) {
+			if (tex == null) return;
 			GUI.DrawTexture(rect.ContractedBy(1f), tex);
 		}
 
-		private static void DrawTexture(Rect rect, Texture2D tex) {
-			Widgets.ButtonImage(rect, tex, Color.white, Color.white, false);
+		private static void DrawTexture(Rect rect, Texture tex) {
+			if (tex == null) return;
+			if (tex is Texture2D tex2D) {
+				Widgets.ButtonImage(rect, tex2D, Color.white, Color.white, false);
+			} else {
+				GUI.DrawTexture(rect, tex);
+				Widgets.ButtonInvisible(rect, false);
+			}
 		}
 
 		private static Rect GetPortraitRect(TextAnchor anchor, float x, float y, bool handleHover = true) {

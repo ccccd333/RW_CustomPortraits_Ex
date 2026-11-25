@@ -12,6 +12,18 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Interrupt
         // 痛みの現在値
         float last_pain_total = 0.0f;
 
+        public void ClearTracking()
+        {
+            tracked_pawn = null;
+            initial_pain_total = 0.0f;
+            last_pain_total = 0.0f;
+        }
+
+        private static bool IsValidPawn(Pawn pawn)
+        {
+            return pawn?.health?.hediffSet != null && !pawn.Dead;
+        }
+
         public bool TryResolveInterruptContext(Pawn target_pawn, PortraitInterrupt portrait_interrupt, Dictionary<string, float> impact_map)
         {
             // 監視対象が切り替わった場合、値を控える
@@ -24,9 +36,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Interrupt
                 }
             }
 
-            if (tracked_pawn.Dead && tracked_pawn.health == null && tracked_pawn.health.hediffSet == null)
+            if (!IsValidPawn(tracked_pawn))
             {
-
+                tracked_pawn = null;
                 return false;
             }
 
@@ -40,24 +52,28 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Interrupt
 
                 if (pi.trigger_mode == MBPainIncrease.TriggerMode.Threshold)
                 {
-                    // 現在の痛み閾値と最後の痛みを足した値以上の場合
-
-                    //  MBPainIncrease.TriggerMode.Threshold
-
+                    // 現在の痛みが最後の痛みに閾値を足した値を超えた場合
                     if (now_value > last_pain_total + pi.delta_threshold)
                     {
-                        //Log.Message($"[PortraitsEx] PainInterruptContextResolver Threshold ==> tracked_pawn {tracked_pawn} now_value {now_value} last_pain_total {last_pain_total} delta_threshold {pi.delta_threshold}");
                         last_pain_total = now_value;
+                        impact_map[PortraitContextKeys.PAIN_INCREASE] = 1.0f;
+                        return true;
+                    }
+                }
+                else if (pi.trigger_mode == MBPainIncrease.TriggerMode.OnEnter)
+                {
+                    // 無痛状態から痛み状態へ入った瞬間のみ通知する
+                    bool was_painless = last_pain_total <= 0.0001f;
+                    last_pain_total = now_value;
+                    if (was_painless && now_value > pi.delta_threshold)
+                    {
                         impact_map[PortraitContextKeys.PAIN_INCREASE] = 1.0f;
                         return true;
                     }
                 }
                 else
                 {
-                    //  MBPainIncrease.TriggerMode.Continuous
-
-                    //Log.Message($"[PortraitsEx] PainInterruptContextResolver Continuous ==> tracked_pawn {tracked_pawn} now_value {now_value} last_pain_total {last_pain_total}");
-                    // 痛みが発生した(ダメージを受けたか、持病の悪化など)
+                    // MBPainIncrease.TriggerMode.Continuous
                     last_pain_total = now_value;
                     impact_map[PortraitContextKeys.PAIN_INCREASE] = 1.0f;
                     return true;
@@ -74,12 +90,13 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.Interrupt
         private bool ResetTracking(Pawn target_pawn)
         {
             // そもそも死んでたり対象がいないなら痛みを監視しない
-            // 公式がhealthとhediffSetのnullチェックしてるから一応入れとく
-            if (target_pawn == null) {
-                if(target_pawn.health == null && target_pawn.health.hediffSet == null && target_pawn.Dead) return false;
+            if (!IsValidPawn(target_pawn))
+            {
+                tracked_pawn = null;
+                initial_pain_total = 0.0f;
+                last_pain_total = 0.0f;
+                return false;
             }
-
-            // ここからは監視対象のポーンが切り替わった場合の値を控える場所
 
             // 監視対象のポーンを控えておく
             tracked_pawn = target_pawn;

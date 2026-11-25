@@ -1,93 +1,86 @@
 using CustomPortraits;
 using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
 using HarmonyLib;
-using Newtonsoft.Json.Linq;
 using RimWorld;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
-using static RimWorld.ColonistBar;
 
 namespace Foxy.CustomPortraits.CustomPortraitsEx
 {
-    [HarmonyPatch]
+    [HarmonyPatch(typeof(PlayLog), nameof(PlayLog.Add))]
     public static class PlayLogEntry_Interaction_ctor
     {
-        private static Dictionary<string, PawnCacheEntry> RecipientLogDict = new Dictionary<string, PawnCacheEntry>();
-        private static Queue<string> RecipientLogOrder = new Queue<string>();
-
-        private static Dictionary<string, PawnCacheEntry> InitiatorLogDict = new Dictionary<string, PawnCacheEntry>();
-        private static Queue<string> InitiatorLogOrder = new Queue<string>();
-
-        public static ConstructorInfo TargetMethod()
+        private class CachedInteraction
         {
-            return AccessTools.Constructor(
-                typeof(PlayLogEntry_Interaction),
-                new System.Type[] {
-                typeof(InteractionDef),
-                typeof(Pawn),
-                typeof(Pawn),
-                typeof(List<RulePackDef>)
-                }
-            );
+            public string dedup_key;
+            public string resolved_key;
+            public float cached_at;
+            public float expire_at;
         }
 
-        public static bool Prefix(InteractionDef intDef, Pawn initiator, Pawn recipient, List<RulePackDef> extraSentencePacks)
+        // PlayLog.Add(LogEntry) では PlayLogEntry_Interaction 内の protected フィールドに直接アクセスできないため、
+        // Harmony の FieldRefAccess（起動時に1回だけ生成される高速な直接フィールド参照デリゲート）を使って
+        // intDef（社交の種類）・initiator（話しかけたポーン）・recipient（話しかけられたポーン）を取り出す。
+        private static readonly AccessTools.FieldRef<PlayLogEntry_Interaction, InteractionDef> IntDefRef =
+            AccessTools.FieldRefAccess<PlayLogEntry_Interaction, InteractionDef>("intDef");
+        private static readonly AccessTools.FieldRef<PlayLogEntry_Interaction, Pawn> InitiatorRef =
+            AccessTools.FieldRefAccess<PlayLogEntry_Interaction, Pawn>("initiator");
+        private static readonly AccessTools.FieldRef<PlayLogEntry_Interaction, Pawn> RecipientRef =
+            AccessTools.FieldRefAccess<PlayLogEntry_Interaction, Pawn>("recipient");
+
+        // キーは pawn.thingIDNumber（Pawnインスタンス自体は保持しない）
+        private static readonly Dictionary<int, List<CachedInteraction>> RecipientLogDict = new Dictionary<int, List<CachedInteraction>>();
+        private static int RecipientTotalCount = 0;
+
+        private static readonly Dictionary<int, List<CachedInteraction>> InitiatorLogDict = new Dictionary<int, List<CachedInteraction>>();
+        private static int InitiatorTotalCount = 0;
+
+        private static readonly List<int> EmptyPawnIdsBuffer = new List<int>();
+
+        public static void Postfix(LogEntry entry)
         {
-            // PlayLog.Add()の引数に使われるPlayLogEntry_Interactionのctor
-
-            // Pawn側でインタラクト結果が取れるならPublicizerでIL書き換え検討
-            // 現時点では存在するか不明。近似できるMODの機能があれば参考にする。
-            // と言っても多分ポーン毎であってもあまりパフォーマンス的に変わらないと思われる。
-
             // セーブデータ(XML)にはInteractで調べるとPlayLogEntry_Interactionのみが引っかかる
-            // なので、本気でポーン毎にインタラクトを持たせているのならセーブデータにあってもいいはずだがないことから
-            // 期待しない。
-
-            // Pawn_InteractionsTrackerにlastInteractionDefとあるが、そもそも他modはPlayLog.Addを使っている。
-            // astInteractionDefを更新するにはTryInteractWithメソッドだが、使ってるのはない。
-            // 呼ばれているかは確認してない。殆どPlayLog.Addの認識。
-
-            // InteractionSelectionMapが大きくなるようならスレッド化検討
-
-            // 相互インタラクトは、ポートレート設定されているものを対象としているため1秒に1回あるかないか
-            // 必要ない認識
-            // povインタラクトも増えたら考える
-
-            // TODO:ポートレート設定した対象のみに絞る→ver1.3.2対応
+            // Pawn_InteractionsTrackerにlastInteractionDefとあるが、他mod（RimTalk等）も含め実プレイ中の社交はPlayLog.Addを通る。
+            // コンストラクタをフックするとRimTalkのセーブ時変換（new PlayLogEntry_Interaction）まで拾ってしまうため、PlayLog.Add側で監視する。
             try
             {
-                // 別スレッドかどうか確認しておく Rimworld ver1.6以降→要確認
-                // もしスレッドIDが違う場合はlock
-                //Log.Message($"Thread ID: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
-                if (!PortraitCacheEx.IsAvailable) return true;
+                if (!PortraitCacheEx.IsAvailable)
+                    return;
+
+                // セーブ・ロード中や非プレイ中は無視する
+                if (Current.ProgramState != ProgramState.Playing || Scribe.mode != LoadSaveMode.Inactive)
+                    return;
+
+                if (!(entry is PlayLogEntry_Interaction interaction))
+                    return;
+
+                InteractionDef intDef = IntDefRef(interaction);
+                if (intDef == null)
+                    return;
+
+                string label_cap = intDef.LabelCap;
+                if (string.IsNullOrEmpty(label_cap))
+                    return;
+
+                Pawn initiator = InitiatorRef(interaction);
+                Pawn recipient = RecipientRef(interaction);
 
                 if (Settings.Instance.debug)
-                    Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
-                
-                //var sw = Stopwatch.StartNew();
-                if (!(initiator.HasPortraitName(null) || initiator.HasPortraitName(PortraitPosition.Inspector)) && 
-                    !(recipient.HasPortraitName(null) || recipient.HasPortraitName(PortraitPosition.Inspector)))
                 {
-                    // ポートレート切替機能を利用していないポーン同士の会話などははじく
-
-                    // 最初は2368 ticksその後は12 ticks程度
-                    //sw.Stop();
-                    if (Settings.Instance.debug)
-                    {
-                        Log.Message($"[PortraitsEx] Skip: no portrait name (Inspector/Default) {intDef.LabelCap} initiator {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull}");
-                        //Log.Message($"{sw.ElapsedTicks}");
-                    }
-
-                    return true;
+                    Log.Message($"[PortraitsEx] InteractionDef {label_cap} initiator {GetPawnDebugName(initiator)} recipient {GetPawnDebugName(recipient)}");
                 }
 
+                // ポートレート切替機能を利用していないポーン同士の会話などははじく
+                if (!HasCustomPortrait(initiator) && !HasCustomPortrait(recipient))
+                {
+                    if (Settings.Instance.debug)
+                    {
+                        Log.Message($"[PortraitsEx] Skip: no portrait name (Inspector/Default) {label_cap} initiator {GetPawnDebugName(initiator)} recipient {GetPawnDebugName(recipient)}");
+                    }
+                    return;
+                }
 
                 CleanupExpiredAndExcessLogs();
 
@@ -95,23 +88,22 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 foreach (var intef in ismap.InteractionFilter)
                 {
                     var filter = intef.Value;
-                    if (!filter.is_recipient && !filter.is_initiator) continue;
-                    //Log.Message($"[PortraitsEx] intef.Key {intef.Key}");
+                    if (!filter.is_recipient && !filter.is_initiator)
+                        continue;
+
+                    bool matched;
                     if (ismap.intf_regex_cache != null && ismap.intf_regex_cache.TryGetValue(intef.Key, out var matcher))
                     {
-                        if (matcher.IsMatch(intDef.LabelCap))
-                        {
-                            //Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} intef.Key {intef.Key}");
-                            PushDict(intDef.LabelCap, filter, initiator, recipient);
-                        }
+                        matched = matcher.IsMatch(label_cap);
                     }
                     else
                     {
-                        if (intDef.LabelCap == intef.Key)
-                        {
-                            //Log.Message($"[PortraitsEx] InteractionDef {intDef.LabelCap} intef.Key {intef.Key}");
-                            PushDict(intDef.LabelCap, filter, initiator, recipient);
-                        }
+                        matched = (label_cap == intef.Key);
+                    }
+
+                    if (matched)
+                    {
+                        PushDict(label_cap, filter, initiator, recipient);
                     }
                 }
             }
@@ -123,142 +115,284 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 }
                 catch (Exception)
                 {
-
                 }
-                //Log.Warning($"[PortraitsEx] An unrecognized error occurred. intDef.LabelCap: {intDef.LabelCap} initiator: {initiator.Name.ToStringFull} recipient {recipient.Name.ToStringFull} ===> wt?: {e.Message}");
             }
+        }
 
-            return true;
+        private static bool HasCustomPortrait(Pawn pawn)
+        {
+            if (pawn?.RaceProps == null)
+                return false;
+            return pawn.HasPortraitName(null) || pawn.HasPortraitName(PortraitPosition.Inspector);
+        }
+
+        private static string GetPawnDebugName(Pawn pawn)
+        {
+            if (pawn == null) return "null";
+            return pawn.Name != null ? pawn.Name.ToStringFull : pawn.LabelShort;
+        }
+
+        public static void Clear()
+        {
+            InitiatorLogDict.Clear();
+            InitiatorTotalCount = 0;
+            RecipientLogDict.Clear();
+            RecipientTotalCount = 0;
+            EmptyPawnIdsBuffer.Clear();
         }
 
         public static void CleanupExpiredAndExcessLogs()
         {
-            if (InitiatorLogDict.Count > 0)
+            float now = Time.realtimeSinceStartup;
+            if (InitiatorTotalCount > 0)
             {
-                CleanupExpiredAndExcessLogsImpl(InitiatorLogDict, InitiatorLogOrder, PortraitCacheEx.Settings.initiator_log_retention.max_entries);
+                CleanupDict(InitiatorLogDict, ref InitiatorTotalCount, now, PortraitCacheEx.Settings.initiator_log_retention.max_entries);
             }
-            if (RecipientLogDict.Count > 0)
+            if (RecipientTotalCount > 0)
             {
-                CleanupExpiredAndExcessLogsImpl(RecipientLogDict, RecipientLogOrder, PortraitCacheEx.Settings.recipient_log_retention.max_entries);
+                CleanupDict(RecipientLogDict, ref RecipientTotalCount, now, PortraitCacheEx.Settings.recipient_log_retention.max_entries);
             }
         }
 
         public static List<string> GetAllKeysByPawnTrimmedFinal(Pawn targetPawn)
         {
             var result = new List<string>();
+            if (targetPawn == null)
+                return result;
+
             var seen = new HashSet<string>();
+            float now = Time.realtimeSinceStartup;
+            int pawn_id = targetPawn.thingIDNumber;
 
-            ExtractKeysFromDict(RecipientLogDict, targetPawn, seen, result);
-            ExtractKeysFromDict(InitiatorLogDict, targetPawn, seen, result);
-
+            CollectKeysFromDict(RecipientLogDict, ref RecipientTotalCount, pawn_id, now, seen, result);
+            CollectKeysFromDict(InitiatorLogDict, ref InitiatorTotalCount, pawn_id, now, seen, result);
             return result;
         }
 
-        private static void ExtractKeysFromDict(Dictionary<string, PawnCacheEntry> dict, Pawn targetPawn, HashSet<string> seen, List<string> result)
+        public static void CollectActiveKeysIntoImpactMap(Pawn targetPawn, Dictionary<string, float> impact_map)
         {
-            if (dict.Count == 0) return;
+            if (targetPawn == null || impact_map == null)
+                return;
 
-            foreach (var kvp in dict)
-            {
-                if (kvp.Value.pawn == targetPawn)
-                {
-                    string matched = kvp.Value.matched_key;
-                    string keyToAdd;
-                    if (!string.IsNullOrEmpty(matched))
-                    {
-                        keyToAdd = matched;
-                    }
-                    else
-                    {
-                        int atIndex = kvp.Key.IndexOf('@');
-                        keyToAdd = atIndex >= 0 ? kvp.Key.Substring(0, atIndex) : kvp.Key;
-                    }
+            float now = Time.realtimeSinceStartup;
+            int pawn_id = targetPawn.thingIDNumber;
 
-                    if (seen.Add(keyToAdd))
-                    {
-                        result.Add(keyToAdd);
-                    }
-                }
-            }
+            CollectKeysIntoImpactMap(RecipientLogDict, ref RecipientTotalCount, pawn_id, now, impact_map);
+            CollectKeysIntoImpactMap(InitiatorLogDict, ref InitiatorTotalCount, pawn_id, now, impact_map);
         }
 
         private static void PushDict(string label_cap, InteractionFilter filter, Pawn initiator, Pawn recipient)
         {
-            //Log.Message($"[PortraitsEx] PushDict START");
             float cache_duration_seconds = filter.cache_duration_seconds;
-            //Log.Message($"[PortraitsEx] PushDict label_cap: {label_cap} is_initiator: {filter.is_initiator} is_recipient: {filter.is_recipient} matched_initiator_key: {filter.matched_initiator_key} matched_recipient_key: {filter.matched_recipient_key} cache_duration_seconds: {filter.cache_duration_seconds}");
-            if (cache_duration_seconds <= 0.0001f) return;
-            //int a = PortraitCacheEx.Settings.initiator_log_retention.max_entries;
-            //Log.Message($"[PortraitsEx] PushDict SEP1");
-            if (filter.is_initiator)
-            {
-                //Log.Message($"[PortraitsEx] PushDict SEP2");
+            if (cache_duration_seconds <= 0.0001f)
+                return;
 
-                if (initiator != null &&initiator.Name != null)
-                {
-                    AddOrUpdate(InitiatorLogDict, InitiatorLogOrder, $"{label_cap}@{initiator.Name.ToStringFull}", filter.matched_initiator_key, initiator, cache_duration_seconds, PortraitCacheEx.Settings.initiator_log_retention.max_entries);
-                }
-                //Log.Message($"[PortraitsEx] PushDict SEP3");
-            }
-            //Log.Message($"[PortraitsEx] PushDict SEP4");
-            if (filter.is_recipient)
+            if (filter.is_initiator && initiator != null)
             {
-               //Log.Message($"[PortraitsEx] PushDict SEP5");
-                if (recipient != null && recipient.Name != null)
-                {
-                    AddOrUpdate(RecipientLogDict, RecipientLogOrder, $"{label_cap}@{recipient.Name.ToStringFull}", filter.matched_recipient_key, recipient, cache_duration_seconds, PortraitCacheEx.Settings.recipient_log_retention.max_entries);
-                }
-                //Log.Message($"[PortraitsEx] PushDict SEP6");
+                string resolved = !string.IsNullOrEmpty(filter.matched_initiator_key) ? filter.matched_initiator_key : label_cap;
+                AddOrUpdate(
+                    InitiatorLogDict,
+                    ref InitiatorTotalCount,
+                    initiator.thingIDNumber,
+                    label_cap,
+                    resolved,
+                    cache_duration_seconds,
+                    PortraitCacheEx.Settings.initiator_log_retention.max_entries);
             }
-            //Log.Message($"[PortraitsEx] PushDict END");
+
+            if (filter.is_recipient && recipient != null)
+            {
+                string resolved = !string.IsNullOrEmpty(filter.matched_recipient_key) ? filter.matched_recipient_key : label_cap;
+                AddOrUpdate(
+                    RecipientLogDict,
+                    ref RecipientTotalCount,
+                    recipient.thingIDNumber,
+                    label_cap,
+                    resolved,
+                    cache_duration_seconds,
+                    PortraitCacheEx.Settings.recipient_log_retention.max_entries);
+            }
         }
 
-        private static void AddOrUpdate(Dictionary<string, PawnCacheEntry> dict, Queue<string> order, string key, string matched_key, Pawn value, float cache_duration_seconds, int max_entries)
+        private static void AddOrUpdate(
+            Dictionary<int, List<CachedInteraction>> dict,
+            ref int total_count,
+            int pawn_id,
+            string dedup_key,
+            string resolved_key,
+            float duration_seconds,
+            int max_entries)
         {
-            //Log.Message($"[PortraitsEx] AddOrUpdate START que: {key} matched_key: {matched_key} pawn: {value}");
-            if (!dict.ContainsKey(key))
+            if (max_entries <= 0)
+                return;
+
+            float now = Time.realtimeSinceStartup;
+            float expire_at = now + duration_seconds;
+
+            if (dict.TryGetValue(pawn_id, out var list))
             {
-                //Log.Message($"[PortraitsEx] AddOrUpdate SEP1 que: {key} matched_key: {matched_key} pawn: {value}");
-                if (dict.Count >= max_entries)
+                for (int i = 0; i < list.Count; i++)
                 {
-                    string oldestKey = order.Dequeue();
-                    //Log.Message($"[PortraitsEx] Dequeue oldestKey: {oldestKey} que: {key} matched_key: {matched_key} pawn: {value}");
-                    dict.Remove(oldestKey);
-                    //Log.Message($"[PortraitsEx] dict count {dict.Count}");
+                    var item = list[i];
+                    if (item.dedup_key == dedup_key && item.resolved_key == resolved_key)
+                    {
+                        item.cached_at = now;
+                        item.expire_at = expire_at;
+                        return;
+                    }
                 }
-                //Log.Message($"[PortraitsEx] AddOrUpdate SEP2 que: {key} matched_key: {matched_key} pawn: {value}");
-                order.Enqueue(key);
             }
-            //Log.Message($"[PortraitsEx] AddOrUpdate SEP3 que: {key} matched_key: {matched_key} pawn: {value}");
-            dict[key] = new PawnCacheEntry(value, matched_key, cache_duration_seconds);
 
-            //Log.Message($"[PortraitsEx] AddOrUpdate END que: {key} matched_key: {matched_key} pawn: {value}");
-        }
-
-        private static void CleanupExpiredAndExcessLogsImpl(Dictionary<string, PawnCacheEntry> dict, Queue<string> order, int max_entries)
-        {
-            var now = Time.realtimeSinceStartup;
-            //Log.Message($"[PortraitsEx] CleanupExpiredAndExcessLogs Remove START");
-
-            while (order.Count > 0)
+            while (total_count >= max_entries)
             {
-                var oldestKey = order.Peek();
-                bool isExpired = dict.TryGetValue(oldestKey, out var entry) && (now - entry.cached_at >= entry.cache_duration_seconds);
-                bool isOverMax = dict.Count > max_entries;
-
-                if (isExpired || isOverMax)
-                {
-                    //Log.Message($"[PortraitsEx] CleanupExpiredAndExcessLogs Remove ==> oldestKey: {oldestKey} now: {now} cached_at: {entry.cached_at} cache_duration_seconds:{entry.cache_duration_seconds}");
-                    order.Dequeue();
-                    dict.Remove(oldestKey);
-                }
-                else
-                {
+                if (!EvictOldest(dict, ref total_count))
                     break;
+            }
+
+            if (list == null)
+            {
+                list = new List<CachedInteraction>(4);
+                dict[pawn_id] = list;
+            }
+
+            list.Add(new CachedInteraction
+            {
+                dedup_key = dedup_key,
+                resolved_key = resolved_key,
+                cached_at = now,
+                expire_at = expire_at
+            });
+            total_count++;
+        }
+
+        private static void CollectKeysFromDict(
+            Dictionary<int, List<CachedInteraction>> dict,
+            ref int total_count,
+            int pawn_id,
+            float now,
+            HashSet<string> seen,
+            List<string> result)
+        {
+            if (!dict.TryGetValue(pawn_id, out var list) || list.Count == 0)
+                return;
+
+            PurgeExpiredForPawn(dict, ref total_count, pawn_id, list, now);
+            for (int i = 0; i < list.Count; i++)
+            {
+                string key = list[i].resolved_key;
+                if (seen.Add(key))
+                {
+                    result.Add(key);
+                }
+            }
+        }
+
+        private static void CollectKeysIntoImpactMap(
+            Dictionary<int, List<CachedInteraction>> dict,
+            ref int total_count,
+            int pawn_id,
+            float now,
+            Dictionary<string, float> impact_map)
+        {
+            if (!dict.TryGetValue(pawn_id, out var list) || list.Count == 0)
+                return;
+
+            PurgeExpiredForPawn(dict, ref total_count, pawn_id, list, now);
+            for (int i = 0; i < list.Count; i++)
+            {
+                string key = list[i].resolved_key;
+                if (!impact_map.ContainsKey(key))
+                {
+                    impact_map[key] = 1.0f;
+                }
+            }
+        }
+
+        private static void PurgeExpiredForPawn(
+            Dictionary<int, List<CachedInteraction>> dict,
+            ref int total_count,
+            int pawn_id,
+            List<CachedInteraction> list,
+            float now)
+        {
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (now >= list[i].expire_at)
+                {
+                    list.RemoveAt(i);
+                    total_count--;
+                }
+            }
+            if (list.Count == 0)
+            {
+                dict.Remove(pawn_id);
+            }
+        }
+
+        private static void CleanupDict(Dictionary<int, List<CachedInteraction>> dict, ref int total_count, float now, int max_entries)
+        {
+            EmptyPawnIdsBuffer.Clear();
+            foreach (var kvp in dict)
+            {
+                var list = kvp.Value;
+                for (int i = list.Count - 1; i >= 0; i--)
+                {
+                    if (now >= list[i].expire_at)
+                    {
+                        list.RemoveAt(i);
+                        total_count--;
+                    }
+                }
+                if (list.Count == 0)
+                {
+                    EmptyPawnIdsBuffer.Add(kvp.Key);
                 }
             }
 
-            //Log.Message($"[PortraitsEx] CleanupExpiredAndExcessLogs Remove END");
+            for (int i = 0; i < EmptyPawnIdsBuffer.Count; i++)
+            {
+                dict.Remove(EmptyPawnIdsBuffer[i]);
+            }
+            EmptyPawnIdsBuffer.Clear();
+
+            while (total_count > max_entries && max_entries >= 0)
+            {
+                if (!EvictOldest(dict, ref total_count))
+                    break;
+            }
+        }
+
+        private static bool EvictOldest(Dictionary<int, List<CachedInteraction>> dict, ref int total_count)
+        {
+            int oldest_pawn_id = 0;
+            int oldest_index = -1;
+            float oldest_cached_at = float.MaxValue;
+
+            foreach (var kvp in dict)
+            {
+                var list = kvp.Value;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (list[i].cached_at < oldest_cached_at)
+                    {
+                        oldest_cached_at = list[i].cached_at;
+                        oldest_pawn_id = kvp.Key;
+                        oldest_index = i;
+                    }
+                }
+            }
+
+            if (oldest_index < 0)
+                return false;
+
+            var target_list = dict[oldest_pawn_id];
+            target_list.RemoveAt(oldest_index);
+            total_count--;
+            if (target_list.Count == 0)
+            {
+                dict.Remove(oldest_pawn_id);
+            }
+            return true;
         }
     }
 }

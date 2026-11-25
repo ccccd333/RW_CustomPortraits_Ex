@@ -1,18 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using UnityEngine;
-using Verse;
 
 namespace Foxy.CustomPortraits.CustomPortraitsEx
 {
     public static class Utility
     {
-        public static readonly string[] n_type = new[] { ".png", ".jpeg", "jpg", ".dds" };
+        public static readonly string[] n_type = new[] { ".png", ".jpeg", ".jpg", ".dds" };
         public static readonly string[] d_type = new[] { ".dds" };
+
+        private static readonly Regex RegexSpecialChars =
+            new Regex(@"\.|\*|\+|\?|\[|\]|\(|\)|\{|\}|\||\\|\^|\$", RegexOptions.Compiled);
+
+        private static readonly Regex ComplexRegexChars =
+            new Regex(@"(?<!\.)\.(?!\*)|\+|\?|\[|\]|\(|\)|\{|\}|\||\\|\^|\$", RegexOptions.Compiled);
+
         public static string Delimiter(string target, out string d)
         {
             string result = target;
@@ -23,7 +24,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 {
                     result = target.Substring(0, target.Length - ext.Length);
                     d = ext;
-                    break;  // 見つかったらループ抜ける
+                    break;
                 }
             }
             return result;
@@ -39,7 +40,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
                 {
                     result = target.Substring(0, target.Length - ext.Length);
                     d = ext;
-                    break;  // 見つかったらループ抜ける
+                    break;
                 }
             }
             return result;
@@ -47,125 +48,113 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
 
         public static bool IsRegexPattern(string pattern)
         {
-            string regexSpecialChars = @"\.|\*|\+|\?|\[|\]|\(|\)|\{|\}|\||\\|\^|\$";
-            return Regex.IsMatch(pattern, regexSpecialChars);
+            return !string.IsNullOrEmpty(pattern) && RegexSpecialChars.IsMatch(pattern);
         }
 
         public static bool IsComplexRegexPattern(string pattern)
         {
-            string complexRegexChars = @"(?<!\.)\.(?!\*)|\+|\?|\[|\]|\(|\)|\{|\}|\||\\|\^|\$";
-            return Regex.IsMatch(pattern, complexRegexChars);
+            return !string.IsNullOrEmpty(pattern) && ComplexRegexChars.IsMatch(pattern);
         }
 
         /// <summary>
-        /// Flip DXT1 compressed data vertically
+        /// Flip DXT1 compressed Mip0 data vertically without per-block heap allocations.
         /// </summary>
-        /// <param name="data">DXT1 compressed DDS byte array (excluding header)</param>
-        /// <param name="width">Texture width (multiple of 4)</param>
-        /// <param name="height">Texture height (multiple of 4)</param>
         public static void FlipDXT1(byte[] data, int width, int height)
         {
-            // Source:https://hub.jmonkeyengine.org/t/dds-texture-flip-problem/4448/3
-            int block_size = 8;
-            int blocks_per_row = width / 4;
-            int blocks_per_col = height / 4;
+            const int block_size = 8;
+            int blocks_per_row = (width + 3) / 4;
+            int blocks_per_col = (height + 3) / 4;
+            int mip0_length = Math.Min(data.Length, blocks_per_row * blocks_per_col * block_size);
+            int row_bytes = blocks_per_row * block_size;
 
-            byte[] rowBuffer = new byte[block_size];
-            // Swap block rows vertically
-            for (int y = 0; y < blocks_per_col / 2; y++)
+            SwapBlockRows(data, row_bytes, blocks_per_col);
+
+            // Flip 4x4 pixel rows inside each block (last 4 bytes: 1 byte per row)
+            for (int i = 0; i + block_size <= mip0_length; i += block_size)
             {
-                for (int x = 0; x < blocks_per_row; x++)
-                {
-                    int topIndex = (y * blocks_per_row + x) * block_size;
-                    int bottomIndex = ((blocks_per_col - 1 - y) * blocks_per_row + x) * block_size;
-                    // Swap top and bottom blocks
-                    Buffer.BlockCopy(data, topIndex, rowBuffer, 0, block_size);
-                    Buffer.BlockCopy(data, bottomIndex, data, topIndex, block_size);
-                    Buffer.BlockCopy(rowBuffer, 0, data, bottomIndex, block_size);
-                }
-            }
-
-            // Flip rows inside each block
-            for (int i = 0; i < data.Length; i += block_size)
-            {
-                // DXT1 block structure: 16bit palette[2] + 32bit data
-                // Flip the data part (4x4 pixels, 2 bits per pixel) vertically
-                // data is the last 4 bytes
-                uint data32 = BitConverter.ToUInt32(data, i + 4);
-
-                // Extract 4 rows (each 2 bits x 4 pixels = 1 byte)
-                uint row0 = (data32 >> 0) & 0xFF;
-                uint row1 = (data32 >> 8) & 0xFF;
-                uint row2 = (data32 >> 16) & 0xFF;
-                uint row3 = (data32 >> 24) & 0xFF;
-
-                // Rearrange rows in reversed order
-                uint flipped = (row3 << 0) | (row2 << 8) | (row1 << 16) | (row0 << 24);
-
-                byte[] flipped_bytes = BitConverter.GetBytes(flipped);
-                Array.Copy(flipped_bytes, 0, data, i + 4, 4);
+                byte r0 = data[i + 4];
+                byte r1 = data[i + 5];
+                data[i + 4] = data[i + 7];
+                data[i + 5] = data[i + 6];
+                data[i + 6] = r1;
+                data[i + 7] = r0;
             }
         }
 
         /// <summary>
-        /// Flip DXT5 compressed data vertically, including alpha
+        /// Flip DXT5 compressed Mip0 data vertically (including alpha) without per-block heap allocations.
         /// </summary>
-        /// <param name="data">DXT5 compressed DDS byte array (excluding header)</param>
-        /// <param name="width">Texture width (multiple of 4)</param>
-        /// <param name="height">Texture height (multiple of 4)</param>
         public static void FlipDXT5(byte[] data, int width, int height)
         {
-            int block_size = 16; // DXT5: 1 block = 16 bytes
-            int blocks_per_row = width / 4;
-            int blocks_per_col = height / 4;
+            const int block_size = 16;
+            int blocks_per_row = (width + 3) / 4;
+            int blocks_per_col = (height + 3) / 4;
+            int mip0_length = Math.Min(data.Length, blocks_per_row * blocks_per_col * block_size);
+            int row_bytes = blocks_per_row * block_size;
 
-            byte[] row_buffer = new byte[block_size];
-
-            // Swap block rows vertically
-            for (int y = 0; y < blocks_per_col / 2; y++)
-            {
-                for (int x = 0; x < blocks_per_row; x++)
-                {
-                    int top_index = (y * blocks_per_row + x) * block_size;
-                    int bottom_index = ((blocks_per_col - 1 - y) * blocks_per_row + x) * block_size;
-
-                    // Swap top and bottom blocks
-                    Buffer.BlockCopy(data, top_index, row_buffer, 0, block_size);
-                    Buffer.BlockCopy(data, bottom_index, data, top_index, block_size);
-                    Buffer.BlockCopy(row_buffer, 0, data, bottom_index, block_size);
-                }
-            }
+            SwapBlockRows(data, row_bytes, blocks_per_col);
 
             // Flip rows inside each block (alpha + color)
-            for (int i = 0; i < data.Length; i += block_size)
+            for (int i = 0; i + block_size <= mip0_length; i += block_size)
             {
-                // --- Alpha part (first 8 bytes) ---
-                ulong alpha_bits = 0;
-                for (int j = 0; j < 6; j++)
-                    alpha_bits |= ((ulong)data[i + 2 + j]) << (8 * j);
+                // --- Alpha part (bytes 2..7: 4 rows x 12 bits) ---
+                ulong alpha_bits =
+                    ((ulong)data[i + 2]) |
+                    ((ulong)data[i + 3] << 8) |
+                    ((ulong)data[i + 4] << 16) |
+                    ((ulong)data[i + 5] << 24) |
+                    ((ulong)data[i + 6] << 32) |
+                    ((ulong)data[i + 7] << 40);
 
-                ulong row_0 = alpha_bits & 0xFFF;
-                ulong row_1 = (alpha_bits >> 12) & 0xFFF;
-                ulong row_2 = (alpha_bits >> 24) & 0xFFF;
-                ulong row_3 = (alpha_bits >> 36) & 0xFFF;
+                ulong row_0 = alpha_bits & 0xFFFuL;
+                ulong row_1 = (alpha_bits >> 12) & 0xFFFuL;
+                ulong row_2 = (alpha_bits >> 24) & 0xFFFuL;
+                ulong row_3 = (alpha_bits >> 36) & 0xFFFuL;
 
-                ulong flipped_alpha = (row_3) | (row_2 << 12) | (row_1 << 24) | (row_0 << 36);
+                ulong flipped_alpha = row_3 | (row_2 << 12) | (row_1 << 24) | (row_0 << 36);
 
-                for (int j = 0; j < 6; j++)
-                    data[i + 2 + j] = (byte)((flipped_alpha >> (8 * j)) & 0xFF);
+                data[i + 2] = (byte)flipped_alpha;
+                data[i + 3] = (byte)(flipped_alpha >> 8);
+                data[i + 4] = (byte)(flipped_alpha >> 16);
+                data[i + 5] = (byte)(flipped_alpha >> 24);
+                data[i + 6] = (byte)(flipped_alpha >> 32);
+                data[i + 7] = (byte)(flipped_alpha >> 40);
 
-                // --- Color part (last 8 bytes) ---
-                uint color_data = BitConverter.ToUInt32(data, i + 12);
+                // --- Color part (bytes 12..15: 1 byte per row) ---
+                byte c0 = data[i + 12];
+                byte c1 = data[i + 13];
+                data[i + 12] = data[i + 15];
+                data[i + 13] = data[i + 14];
+                data[i + 14] = c1;
+                data[i + 15] = c0;
+            }
+        }
 
-                uint c_row_0 = (color_data >> 0) & 0xFF;
-                uint c_row_1 = (color_data >> 8) & 0xFF;
-                uint c_row_2 = (color_data >> 16) & 0xFF;
-                uint c_row_3 = (color_data >> 24) & 0xFF;
+        private static void SwapBlockRows(byte[] data, int row_bytes, int blocks_per_col)
+        {
+            if (blocks_per_col < 2 || row_bytes <= 0)
+                return;
 
-                uint flipped_color = (c_row_3 << 0) | (c_row_2 << 8) | (c_row_1 << 16) | (c_row_0 << 24);
+            Span<byte> temp = row_bytes <= 4096
+                ? stackalloc byte[row_bytes]
+                : new byte[row_bytes];
 
-                byte[] flipped_color_bytes = BitConverter.GetBytes(flipped_color);
-                Array.Copy(flipped_color_bytes, 0, data, i + 12, 4);
+            int top = 0;
+            int bottom = blocks_per_col - 1;
+            while (top < bottom)
+            {
+                int top_offset = top * row_bytes;
+                int bottom_offset = bottom * row_bytes;
+                if (bottom_offset + row_bytes <= data.Length)
+                {
+                    Span<byte> top_span = data.AsSpan(top_offset, row_bytes);
+                    Span<byte> bottom_span = data.AsSpan(bottom_offset, row_bytes);
+                    top_span.CopyTo(temp);
+                    bottom_span.CopyTo(top_span);
+                    temp.CopyTo(bottom_span);
+                }
+                top++;
+                bottom--;
             }
         }
 
@@ -174,12 +163,8 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx
             if (string.IsNullOrEmpty(path))
                 return "";
 
-            // 末尾の / を全部削除
             path = path.TrimEnd('/');
-
-            // 末尾に1つだけ / を付ける
             return path + "/";
         }
-
     }
 }

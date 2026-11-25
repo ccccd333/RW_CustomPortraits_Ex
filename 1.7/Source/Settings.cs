@@ -33,9 +33,9 @@ namespace Foxy.CustomPortraits {
 		public static bool IsCustom => HasPosition(PortraitPosition.Custom);
 
 		public static bool HasPosition(PortraitPosition? position) {
+			if (!position.HasValue) return true;
 			if (position.Value == PortraitPosition.ColonistBar && ModCompatibility.NalsCustomPortraits) return false;
 			if (position.Value != PortraitPosition.ColonistBar && WorldRendererUtility.CurrentWorldRenderMode == WorldRenderMode.Planet) return false;
-			if (!position.HasValue) return true;
 			return Position.HasFlag(position.Value);
 		}
 	}

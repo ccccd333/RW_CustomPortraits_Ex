@@ -1,16 +1,8 @@
 ﻿using Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow.Tabs;
-using Foxy.CustomPortraits.CustomPortraitsEx.Repository;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Verse;
-using static RimWorld.ColonistBar;
-using static RimWorld.PsychicRitualRoleDef;
 
 namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
 {
@@ -56,18 +48,25 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
             }
         }
 
+        private static void CreateBackupIfExists(string file_path, string file_name)
+        {
+            if (!File.Exists(file_path))
+                return;
+
+            DateTime now = DateTime.Now;
+            string backup_dir = Path.Combine(PortraitCacheEx.Directory.FullName, "Backups", now.ToString("yyyyMMdd"));
+            Directory.CreateDirectory(backup_dir);
+            string backup_path = Path.Combine(backup_dir, $"{file_name}.{now:yyyyMMdd_HHmmss}");
+            File.Copy(file_path, backup_path, overwrite: true);
+        }
+
         private void WriteJsonAll()
         {
             string preset_directory = PortraitCacheEx.PresetDirectory.FullName;
             string file_name = dbt_copy.selected_preset_name + ".json";
             string file_path = Path.Combine(preset_directory, file_name);
 
-            // 先祖は１つまでバックアップする
-            string backup_dir = Path.Combine(preset_directory, DateTime.Now.ToString("backup"));
-            string backup_dir_ymd = Path.Combine(backup_dir, DateTime.Now.ToString("yyyyMMdd"));
-            Directory.CreateDirectory(backup_dir);
-            string backup_path = Path.Combine(backup_dir, file_name + "." + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-            File.Copy(file_path, backup_path, overwrite: true);
+            CreateBackupIfExists(file_path, file_name);
 
             string json = File.ReadAllText(file_path);
             JObject data = JObject.Parse(json);
@@ -104,13 +103,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
             JObject data;
             if (File.Exists(file_path))
             {
-                // 先祖は１つまでバックアップする
-                string backup_dir = Path.Combine(preset_directory, DateTime.Now.ToString("backup"));
-                string backup_dir_ymd = Path.Combine(backup_dir, DateTime.Now.ToString("yyyyMMdd"));
-                Directory.CreateDirectory(backup_dir);
-                string backup_path = Path.Combine(backup_dir, file_name + "." + DateTime.Now.ToString("yyyyMMdd_HHmmss"));
-                File.Copy(file_path, backup_path, overwrite: true);
-
+                CreateBackupIfExists(file_path, file_name);
                 string json = File.ReadAllText(file_path);
                 data = JObject.Parse(json);
             }
@@ -120,42 +113,17 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
             }
 
             data["preset_name"] = "InteractionFilter";
-            JObject work_conditions;
-            if (data.TryGetValue("conditions", out JToken conditions_copy))
-            {
-                if (conditions_copy is JObject conditions)
-                {
-                    work_conditions = conditions;
-                }
-                else
-                {
-                    work_conditions = new JObject();
-                }
-            }
-            else
+            if (!(data["conditions"] is JObject work_conditions))
             {
                 work_conditions = new JObject();
+                data["conditions"] = work_conditions;
             }
-            data["conditions"] = work_conditions;
 
-            JObject work_interaction_filter;
-            if (work_conditions.TryGetValue("interaction_filter", out JToken interaction_filter_copy))
-            {
-                if (interaction_filter_copy is JObject interaction_filter)
-                {
-                    work_interaction_filter = interaction_filter;
-                }
-                else
-                {
-                    work_interaction_filter = new JObject();
-                }
-            }
-            else
+            if (!(work_conditions["interaction_filter"] is JObject work_interaction_filter))
             {
                 work_interaction_filter = new JObject();
+                work_conditions["interaction_filter"] = work_interaction_filter;
             }
-
-            work_conditions["interaction_filter"] = work_interaction_filter;
 
             foreach (var rsi in ife_copy.result_selected_interactions)
             {
@@ -180,15 +148,20 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
             string file_name = dbt_copy.selected_preset_name + ".json";
             string file_path = Path.Combine(preset_directory, file_name);
 
-            // 先祖は１つまでバックアップする
-            string backup_dir = Path.Combine(preset_directory, DateTime.Now.ToString("yyyyMMdd"));
-            Directory.CreateDirectory(backup_dir);
-            string backup_path = Path.Combine(backup_dir, file_name);
-            File.Copy(file_path, backup_path, overwrite: true);
+            CreateBackupIfExists(file_path, file_name);
 
             string json = File.ReadAllText(file_path);
             JObject data = JObject.Parse(json);
-            BuildPriorityWeightNode((JObject)data["conditions"]["priority_weights"]);
+            if (!(data["conditions"] is JObject conditions))
+            {
+                conditions = new JObject();
+                data["conditions"] = conditions;
+            }
+
+            // 既存 JObject へのインデクサ代入は元のプロパティ順を維持してしまうため、新規 JObject で置き換えて並び順を反映する
+            JObject new_priority_weights = new JObject();
+            BuildPriorityWeightNode(new_priority_weights);
+            conditions["priority_weights"] = new_priority_weights;
 
             string output_json = JsonConvert.SerializeObject(data, Formatting.Indented);
             File.WriteAllText(file_path, output_json);
@@ -196,23 +169,9 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
 
         private void BuildFullJson(JObject root)
         {
-            // preset_name
             root["preset_name"] = dbt_copy.selected_preset_name.Trim();
 
-            // conditions
-            JObject work_conditions;
-            if (root.TryGetValue("conditions", out JToken value))
-            {
-                if (value is JObject conditions)
-                {
-                    work_conditions = conditions;
-                }
-                else
-                {
-                    work_conditions = new JObject();
-                }
-            }
-            else
+            if (!(root["conditions"] is JObject work_conditions))
             {
                 work_conditions = new JObject();
             }
@@ -220,87 +179,39 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
             root["conditions"] = work_conditions;
         }
 
-
         private void BuildConditionsNode(JObject conditions)
         {
-            // fallback_mood
             conditions["fallback_mood"] = "Idle";
             conditions["fallback_mood_on_death"] = "Dead";
-            // refs
-            JObject work_refs;
-            if (conditions.TryGetValue("refs", out JToken refs_copy))
-            {
-                if (refs_copy is JObject refs)
-                {
-                    work_refs = refs;
-                }
-                else
-                {
-                    work_refs = new JObject();
-                }
-            }
-            else
+
+            if (!(conditions["refs"] is JObject work_refs))
             {
                 work_refs = new JObject();
             }
             BuildRefsNode(work_refs);
             conditions["refs"] = work_refs;
 
-            // group
-            JObject work_group;
-            if (conditions.TryGetValue("group", out JToken group_copy))
-            {
-                if (group_copy is JObject group)
-                {
-                    work_group = group;
-                }
-                else
-                {
-                    work_group = new JObject();
-                }
-            }
-            else
+            if (!(conditions["group"] is JObject work_group))
             {
                 work_group = new JObject();
             }
             BuildGroupNode(work_group);
             conditions["group"] = work_group;
 
-            // priority_weight
-            // priority_weightのみ優先順位を全ての項目に対して並び変えるので、新規でも既存でも上書きする
-
-            JObject work_priority_weight = new JObject(); ;
-            //if (conditions.TryGetValue("priority_weight", out JToken priority_weight_copy))
-            //{
-            //    if (priority_weight_copy is JObject priority_weight)
-            //    {
-            //        work_priority_weight = priority_weight;
-            //    }
-            //    else
-            //    {
-            //        work_priority_weight = new JObject();
-            //    }
-            //}
-            //else
-            //{
-            //    work_priority_weight = new JObject();
-            //}
+            JObject work_priority_weight = new JObject();
             BuildPriorityWeightNode(work_priority_weight);
             conditions["priority_weights"] = work_priority_weight;
-
         }
 
         private void BuildRefsNode(JObject refs)
         {
-            // グループ名のものがすでに存在する場合は上書き
             refs[gp_copy.result_edit_target_group_name] = new JObject()
             {
                 ["textures"] = new JObject
                 {
                     ["animation_mode"] = pge_copy.result_texture_meta.IsAnimation ? 1 : 0,
                     ["display_duration"] = pge_copy.result_texture_meta.display_duration,
-                    ["files"] = new JArray {
-                        pge_copy.result_texture_meta.file_path }
+                    ["files"] = new JArray { pge_copy.result_texture_meta.file_path }
                 }
             };
 
@@ -310,8 +221,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
                 {
                     ["animation_mode"] = pge_copy.result_texture_idle_meta.IsAnimation ? 1 : 0,
                     ["display_duration"] = pge_copy.result_texture_idle_meta.display_duration,
-                    ["files"] = new JArray {
-                        pge_copy.result_texture_idle_meta.file_path }
+                    ["files"] = new JArray { pge_copy.result_texture_idle_meta.file_path }
                 }
             };
 
@@ -321,8 +231,7 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
                 {
                     ["animation_mode"] = pge_copy.result_texture_dead_meta.IsAnimation ? 1 : 0,
                     ["display_duration"] = pge_copy.result_texture_dead_meta.display_duration,
-                    ["files"] = new JArray {
-                        pge_copy.result_texture_dead_meta.file_path }
+                    ["files"] = new JArray { pge_copy.result_texture_dead_meta.file_path }
                 }
             };
         }
@@ -334,13 +243,13 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow
 
         private void BuildPriorityWeightNode(JObject priority_weight)
         {
-            foreach(var weight_name in pwe_copy.result_priority_weight_order)
+            foreach (var weight_name in pwe_copy.result_priority_weight_order)
             {
                 var weight = pwe_copy.result_priority_weights[weight_name];
 
                 priority_weight[weight_name] = new JObject()
                 {
-                    ["category"] = 0,
+                    ["category"] = (int)weight.category,
                     ["weight"] = weight.weight
                 };
             }

@@ -354,14 +354,14 @@ namespace Foxy.CustomPortraits.CustomPortraitsEx.JsonEditorWindow.Tabs
                 {
                     result_interaction_filter.Clear();
                     result_selected_interactions.Clear();
-                    if (temp_interaction_filter.matched_initiator_key != temp_interaction_filter.matched_recipient_key)
+                    if (!string.IsNullOrEmpty(temp_interaction_filter.matched_initiator_key))
                     {
                         result_interaction_filter.Add(temp_interaction_filter.matched_initiator_key);
-                        result_interaction_filter.Add(temp_interaction_filter.matched_recipient_key);
                     }
-                    else
+                    if (!string.IsNullOrEmpty(temp_interaction_filter.matched_recipient_key) &&
+                        temp_interaction_filter.matched_recipient_key != temp_interaction_filter.matched_initiator_key)
                     {
-                        result_interaction_filter.Add(temp_interaction_filter.matched_initiator_key);
+                        result_interaction_filter.Add(temp_interaction_filter.matched_recipient_key);
                     }
 
                     // インタラクションのキーになる箇所
